@@ -1,0 +1,22 @@
+send:
+  name: Nachricht senden
+  description: Sendet den zentralen Text eines Ereignisses an die konfigurierten Ausgabegeräte.
+  fields:
+    reason:
+      name: Ereignis
+      description: Schlüssel des Ereignisses aus dem Ereigniskatalog.
+      required: true
+      selector:
+        text:
+    context:
+      name: Kontext
+      description: Variablen für Templates im gemeinsamen Nachrichtentext.
+      required: false
+      selector:
+        object:
+    event_key:
+      name: Eindeutiger Ereignisschlüssel
+      description: Optionaler Schlüssel für spätere Duplikat- und Wiederholungslogik.
+      required: false
+      selector:
+        text:

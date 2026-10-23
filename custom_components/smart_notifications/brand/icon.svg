@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Smart Notifications">
+  <rect width="256" height="256" rx="52" fill="#173f66"/>
+  <path d="M76 177c0-39 10-62 25-76 9-9 18-13 27-16V72a14 14 0 0 1 28 0v13c9 3 18 7 27 16 15 14 25 37 25 76l13 14H63z" fill="#fff"/>
+  <path d="M110 205h36" stroke="#ffae22" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="128" cy="70" r="9" fill="#ffae22"/>
+  <path d="M58 104c-11 12-16 25-16 40s5 28 16 40M198 104c11 12 16 25 16 40s-5 28-16 40" fill="none" stroke="#ffae22" stroke-width="9" stroke-linecap="round"/>
+</svg>

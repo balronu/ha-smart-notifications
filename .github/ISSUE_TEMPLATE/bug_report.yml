@@ -1,0 +1,15 @@
+name: Fehlerbericht
+description: Melde einen reproduzierbaren Fehler.
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte und erwartetes Verhalten
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Home-Assistant- und Integrationsversion
+    validations:
+      required: true

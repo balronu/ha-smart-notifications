@@ -1,0 +1,9 @@
+name: Funktionswunsch
+description: Schlage eine Erweiterung vor.
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Beschreibung
+    validations:
+      required: true
