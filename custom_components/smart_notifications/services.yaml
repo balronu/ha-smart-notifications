@@ -6,17 +6,40 @@ send:
       name: Ereignis
       description: Schlüssel des Ereignisses aus dem Ereigniskatalog.
       required: true
-      selector:
-        text:
+      selector: {text: {}}
     context:
       name: Kontext
-      description: Variablen für Templates im gemeinsamen Nachrichtentext.
       required: false
-      selector:
-        object:
+      selector: {object: {}}
     event_key:
       name: Eindeutiger Ereignisschlüssel
-      description: Optionaler Schlüssel für spätere Duplikat- und Wiederholungslogik.
       required: false
-      selector:
-        text:
+      selector: {text: {}}
+test_device:
+  name: Gerät testen
+  description: Sendet nur nach ausdrücklicher Bestätigung eine Testnachricht an ein konfiguriertes Gerät.
+  fields:
+    device_id:
+      name: Gerät
+      required: true
+      selector: {text: {}}
+    message:
+      name: Testnachricht
+      required: false
+      selector: {text: {}}
+    confirm:
+      name: Bestätigung
+      required: true
+      selector: {boolean: {}}
+test_event:
+  name: Ereignis testen
+  description: Führt nur nach ausdrücklicher Bestätigung die konfigurierten Ausgaben eines Ereignisses aus.
+  fields:
+    reason:
+      name: Ereignis
+      required: true
+      selector: {text: {}}
+    confirm:
+      name: Bestätigung
+      required: true
+      selector: {boolean: {}}

@@ -10,6 +10,10 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
+    ATTR_CONFIRM,
+    ATTR_DEVICE_ID,
+    ATTR_MESSAGE,
+    ATTR_REASON,
     CONF_DEDUP_SECONDS,
     CONF_DEVICES,
     CONF_EVENTS,
@@ -17,6 +21,7 @@ from .const import (
     CONF_TITLE,
     CONF_TTS_ENTITY,
     DOMAIN,
+    TEST_MESSAGE,
 )
 from .storage import discovered_devices, merged_config
 
@@ -56,7 +61,7 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         self._ensure_data()
-        return self.async_show_menu(step_id="init", menu_options=["settings", "devices", "events", "event_devices", "device_events"])
+        return self.async_show_menu(step_id="init", menu_options=["settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"])
 
     async def async_step_settings(self, user_input=None):
         data = self._ensure_data()
@@ -105,3 +110,19 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
                 data[CONF_ROUTES][reason] = sorted(current)
             return self.async_create_entry(title="", data=data)
         return self.async_show_form(step_id="device_events", data_schema=vol.Schema({vol.Required("device"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": k, "label": v["name"]} for k, v in data[CONF_DEVICES].items()])), vol.Optional("events", default=[]): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": k, "label": v["name"]} for k, v in data[CONF_EVENTS].items()], multiple=True))}))
+
+    async def async_step_test_device(self, user_input=None):
+        data = self._ensure_data()
+        if user_input is not None:
+            if user_input.get(ATTR_CONFIRM):
+                await self.hass.services.async_call(DOMAIN, "test_device", {ATTR_DEVICE_ID: user_input[ATTR_DEVICE_ID], ATTR_MESSAGE: user_input.get(ATTR_MESSAGE, TEST_MESSAGE), ATTR_CONFIRM: True}, blocking=True)
+            return self.async_create_entry(title="", data=data)
+        return self.async_show_form(step_id="test_device", data_schema=vol.Schema({vol.Required(ATTR_DEVICE_ID): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": k, "label": v["name"]} for k, v in data[CONF_DEVICES].items()])), vol.Optional(ATTR_MESSAGE, default=TEST_MESSAGE): str, vol.Required(ATTR_CONFIRM, default=False): bool}))
+
+    async def async_step_test_event(self, user_input=None):
+        data = self._ensure_data()
+        if user_input is not None:
+            if user_input.get(ATTR_CONFIRM):
+                await self.hass.services.async_call(DOMAIN, "test_event", {ATTR_REASON: user_input[ATTR_REASON], ATTR_CONFIRM: True}, blocking=True)
+            return self.async_create_entry(title="", data=data)
+        return self.async_show_form(step_id="test_event", data_schema=vol.Schema({vol.Required(ATTR_REASON): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": k, "label": v["name"]} for k, v in data[CONF_EVENTS].items()])), vol.Required(ATTR_CONFIRM, default=False): bool}))

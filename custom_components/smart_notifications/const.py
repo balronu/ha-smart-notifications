@@ -10,6 +10,8 @@ VERSION = "0.1.0-beta.1"
 PLATFORMS: list[str] = []
 
 SERVICE_SEND = "send"
+SERVICE_TEST_DEVICE = "test_device"
+SERVICE_TEST_EVENT = "test_event"
 CONF_EVENTS = "events"
 CONF_DEVICES = "devices"
 CONF_ROUTES = "routes"
@@ -22,6 +24,10 @@ DEFAULT_TITLE = "Home Assistant"
 ATTR_REASON = "reason"
 ATTR_CONTEXT = "context"
 ATTR_EVENT_KEY = "event_key"
+ATTR_DEVICE_ID = "device_id"
+ATTR_MESSAGE = "message"
+ATTR_CONFIRM = "confirm"
+TEST_MESSAGE = "Dies ist eine Testnachricht von Smart Notifications."
 
 EVENT_DEFINITIONS = {
     "fridge_open": ("Kühlschrank noch offen", "Der Kühlschrank ist noch offen."),

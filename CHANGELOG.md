@@ -7,9 +7,11 @@
 - Gemeinsame Ereignisnachrichten für TTS und Push.
 - Zentrale Action `smart_notifications.send`.
 - Best-effort-Duplikatschutz für mehrere Entitäten desselben physischen Geräts.
+- Bewusste Einzelgeräte-/Ereignistests und responsive Lovelace-Karte mit Editor.
 
 ### English
 - First installable HACS beta with Config Flow and Options Flow.
 - Shared event messages for TTS and push notifications.
 - Central `smart_notifications.send` action.
 - Best-effort duplicate suppression for multiple entities of one physical device.
+- Deliberate device/event tests and a responsive Lovelace card with editor.

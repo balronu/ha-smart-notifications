@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Smart Notifications">
-  <rect width="256" height="256" rx="52" fill="#173f66"/>
-  <path d="M76 177c0-39 10-62 25-76 9-9 18-13 27-16V72a14 14 0 0 1 28 0v13c9 3 18 7 27 16 15 14 25 37 25 76l13 14H63z" fill="#fff"/>
-  <path d="M110 205h36" stroke="#ffae22" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="128" cy="70" r="9" fill="#ffae22"/>
-  <path d="M58 104c-11 12-16 25-16 40s5 28 16 40M198 104c11 12 16 25 16 40s-5 28-16 40" fill="none" stroke="#ffae22" stroke-width="9" stroke-linecap="round"/>
+  <rect width="256" height="256" rx="48" fill="#0d70cd"/>
+  <path d="M72 161c0-39 11-61 28-73V72a28 28 0 0 1 56 0v16c17 12 28 34 28 73l12 14H60z" fill="#5db7ef" stroke="#e8fbff" stroke-width="5"/>
+  <path d="M103 182h50" stroke="#e8fbff" stroke-width="9" stroke-linecap="round"/><circle cx="128" cy="177" r="8" fill="#ffa622"/>
+  <path d="M53 87c-13 14-19 29-19 45s6 31 19 45M203 87c13 14 19 29 19 45s-6 31-19 45" fill="none" stroke="#1bd0ee" stroke-width="9" stroke-linecap="round"/>
+  <path d="M128 177v22M128 199 64 217M128 199l64 18" stroke="#1bd0ee" stroke-width="5"/><circle cx="64" cy="221" r="18" fill="#238de0" stroke="#fff" stroke-width="4"/><circle cx="128" cy="221" r="18" fill="#15bddb" stroke="#fff" stroke-width="4"/><circle cx="192" cy="221" r="18" fill="#4848dc" stroke="#fff" stroke-width="4"/>
+  <path d="M58 224h12M64 218v12M124 215h8v13h-8zM187 216h10v12h-10z" stroke="#fff" stroke-width="3" fill="none"/>
 </svg>

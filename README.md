@@ -13,8 +13,12 @@ Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligente
 - Best-effort-Erkennung identischer physischer Geräte (z. B. Cast/Music-Assistant-Entitäten)
 - zentrale Action `smart_notifications.send`
 - asynchrone Ausgaben mit grundlegender Fehlerprotokollierung
+- bewusste Einzelgeräte- und Ereignistests über Options Flow und Lovelace-Karte
+- responsive Smart Notifications Card mit grafischem Editor, Status und Ausgabehistorie
 
 ## Installation über HACS
+
+Repository-Kategorie: **Integration**; HACS-Topics sind für die Auffindbarkeit gesetzt.
 
 1. HACS → Integrationen → Benutzerdefiniertes Repository hinzufügen.
 2. `https://github.com/balronu/ha-smart-notifications` als **Integration** hinzufügen.
@@ -24,6 +28,8 @@ Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligente
 ## Konfiguration
 
 Nach dem Hinzufügen stehen Optionen für TTS-Engine, Ausgabeentitäten, Ereignistexte und beide Zuordnungsrichtungen zur Verfügung. Eine Entität kann mehreren Ereignissen zugeordnet werden.
+
+Für die Karte die Ressource `/smart_notifications/smart-notifications-card.js` einmalig über **Einstellungen → Dashboards → Ressourcen** als JavaScript-Modul hinzufügen. Danach kann **Smart Notifications Card** über den visuellen Karteneditor hinzugefügt werden; YAML ist nicht erforderlich. Testausgaben werden ausschließlich nach einem bewussten Klick und einer Bestätigung ausgeführt.
 
 ## Beispielautomation
 
@@ -53,9 +59,9 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.1` release provides native setup/options flows, a shared event catalog, `smart_notifications.send`, TTS via `tts.speak`, notify targets, and best-effort physical-device deduplication. Configure it through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.1` release provides native setup/options flows, a shared event catalog, `smart_notifications.send`, TTS via `tts.speak`, notify targets, deliberate device/event tests and a responsive Lovelace card with a visual editor. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
-The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Report issues at the URL above.
+The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 
 ## Lizenz
 
