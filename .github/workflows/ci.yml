@@ -17,11 +17,12 @@ jobs:
       - run: pytest -q
       - run: ruff check .
       - run: python -m compileall -q custom_components
-      - run: python - <<'PY'
+      - run: |
+          python - <<'PY'
           import json
           from pathlib import Path
           for path in Path('.').rglob('*.json'):
               json.loads(path.read_text())
           print('JSON valid')
-        PY
+          PY
       - uses: hacs/action@main
