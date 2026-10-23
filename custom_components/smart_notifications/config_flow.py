@@ -23,13 +23,13 @@ from .const import (
     DOMAIN,
     TEST_MESSAGE,
 )
-from .storage import discovered_devices, merged_config
+from .storage import discovered_devices, discovered_tts_entities, merged_config
 
 
 class SmartNotificationsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle initial setup."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         if self._async_current_entries():
@@ -39,7 +39,11 @@ class SmartNotificationsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({vol.Optional(CONF_TTS_ENTITY, default=""): selector.EntitySelector(selector.EntitySelectorConfig(domain="tts")), vol.Optional(CONF_TITLE, default="Home Assistant"): str, vol.Optional(CONF_DEDUP_SECONDS, default=30): vol.Coerce(int)}),
-            description_placeholders={"device_count": str(len(discovered_devices(self.hass)))},
+            description_placeholders={
+                "media_player_count": str(sum(1 for item in discovered_devices(self.hass) if item["channel"] == "tts")),
+                "notify_count": str(sum(1 for item in discovered_devices(self.hass) if item["channel"] == "notify")),
+                "tts_count": str(len(discovered_tts_entities(self.hass))),
+            },
         )
 
     @staticmethod
@@ -78,9 +82,17 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             found = next((x for x in options if x["entity_id"] == entity_id), None)
             if found:
                 profile_id = entity_id.replace(".", "_")
-                data[CONF_DEVICES][profile_id] = {**found, "enabled": True}
+                profile = {**found, "enabled": True}
+                if user_input.get("physical_group"):
+                    profile["physical_key"] = f"manual:{user_input['physical_group'].strip().lower()}"
+                    profile["physical_confidence"] = "manual"
+                    profile["physical_evidence"] = "Manuell bestätigt"
+                data[CONF_DEVICES][profile_id] = profile
             return self.async_create_entry(title="", data=data)
-        return self.async_show_form(step_id="devices", data_schema=vol.Schema({vol.Required("entity_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": x["entity_id"], "label": f"{x['name']} ({x['entity_id']})"} for x in options], mode=selector.SelectSelectorMode.DROPDOWN))}))
+        return self.async_show_form(step_id="devices", data_schema=vol.Schema({
+            vol.Required("entity_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": x["entity_id"], "label": f"{x['name']} ({x['entity_id']}) – {x['channel']}"} for x in options], mode=selector.SelectSelectorMode.DROPDOWN)),
+            vol.Optional("physical_group", default=""): str,
+        }))
 
     async def async_step_events(self, user_input=None):
         data = self._ensure_data()

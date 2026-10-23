@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -32,8 +34,18 @@ def main() -> int:
         if missing:
             print(f"Missing package files: {sorted(missing)}", file=sys.stderr)
             return 1
-        print(f"Built {output} ({len(names)} files)")
-        print(f"SHA256: {__import__('hashlib').sha256(output.read_bytes()).hexdigest()}")
+        bad = archive.testzip()
+        if bad:
+            print(f"Invalid ZIP member: {bad}", file=sys.stderr)
+            return 1
+        try:
+            commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+        except (OSError, subprocess.CalledProcessError):
+            commit = "unknown"
+        digest = hashlib.sha256(output.read_bytes()).hexdigest()
+        print(f"Built {output} ({len(names)} files; commit {commit})")
+        print(f"ZIP integrity: OK; expected files: {len(names)}")
+        print(f"SHA256: {digest}")
     return 0
 
 

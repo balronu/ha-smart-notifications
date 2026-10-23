@@ -1,5 +1,21 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.2 – 2026-10-23
+
+### Deutsch
+- Setup-Fehler mit der HA-2026.10-Static-Path-API behoben.
+- Options-Flow-Menü auf `menu_options` korrigiert und vollständig übersetzt.
+- Technische Feldnamen im Config Flow durch verständliche deutsche und englische Bezeichnungen ersetzt.
+- Beta.1-Konfigurationen werden additiv übernommen; TTS-Engines werden getrennt von Ausgabegeräten erkannt.
+- Idempotente Service- und Frontend-Registrierung sowie zusätzliche Lifecycle-/Persistenztests.
+
+### English
+- Fixed setup failure caused by the HA 2026.10 static-path API.
+- Corrected the Options Flow menu to use `menu_options` with complete translations.
+- Replaced technical Config Flow field names with clear German and English labels.
+- Beta.1 configuration is migrated additively; TTS engines are separated from output devices.
+- Added idempotent service/frontend registration and lifecycle/persistence coverage.
+
 ## 0.1.0-beta.1 – 2026-10-23
 
 ### Deutsch

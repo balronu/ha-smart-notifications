@@ -2,7 +2,7 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.1` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.2` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
@@ -10,7 +10,7 @@ Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligente
 - Ereigniskatalog mit gemeinsamem Nachrichtentext für TTS und Push
 - Geräteansicht und Ereignisansicht verwenden dieselbe Konfiguration
 - Media-Player als TTS-Ziele und Notify-Entitäten als Push-Ziele
-- Best-effort-Erkennung identischer physischer Geräte (z. B. Cast/Music-Assistant-Entitäten)
+- Best-effort-Erkennung identischer physischer Geräte (z. B. Cast/Music-Assistant-Entitäten) mit manueller Gruppierung bei unklarer Identität
 - zentrale Action `smart_notifications.send`
 - asynchrone Ausgaben mit grundlegender Fehlerprotokollierung
 - bewusste Einzelgeräte- und Ereignistests über Options Flow und Lovelace-Karte
@@ -27,9 +27,9 @@ Repository-Kategorie: **Integration**; HACS-Topics sind für die Auffindbarkeit 
 
 ## Konfiguration
 
-Nach dem Hinzufügen stehen Optionen für TTS-Engine, Ausgabeentitäten, Ereignistexte und beide Zuordnungsrichtungen zur Verfügung. Eine Entität kann mehreren Ereignissen zugeordnet werden.
+Nach dem Hinzufügen stehen Optionen für TTS-Engine, Ausgabeentitäten, Ereignistexte und beide Zuordnungsrichtungen zur Verfügung. Eine Entität kann mehreren Ereignissen zugeordnet werden. TTS-Engines wie Piper werden getrennt von Media-Playern erkannt und nie als Lautsprecher angeboten.
 
-Für die Karte die Ressource `/smart_notifications/smart-notifications-card.js` einmalig über **Einstellungen → Dashboards → Ressourcen** als JavaScript-Modul hinzufügen. Danach kann **Smart Notifications Card** über den visuellen Karteneditor hinzugefügt werden; YAML ist nicht erforderlich. Testausgaben werden ausschließlich nach einem bewussten Klick und einer Bestätigung ausgeführt.
+Für die Karte die Ressource `/smart_notifications/smart-notifications-card.js` einmalig über **Einstellungen → Dashboards → Ressourcen** als JavaScript-Modul hinzufügen. Die Registrierung ist innerhalb des HA-Lifecycles idempotent; eine bereits vorhandene Ressource wird nicht erneut angelegt. Danach kann **Smart Notifications Card** über den visuellen Karteneditor hinzugefügt werden; YAML ist nicht erforderlich. Testausgaben werden ausschließlich nach einem bewussten Klick und einer Bestätigung ausgeführt.
 
 ## Beispielautomation
 
@@ -59,7 +59,7 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.1` release provides native setup/options flows, a shared event catalog, `smart_notifications.send`, TTS via `tts.speak`, notify targets, deliberate device/event tests and a responsive Lovelace card with a visual editor. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.2` release provides corrected native setup/options flows, translated fields and menu labels, Beta.1 option migration, a shared event catalog, `smart_notifications.send`, TTS via `tts.speak`, notify targets, deliberate device/event tests and a responsive Lovelace card with a visual editor. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
 The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 

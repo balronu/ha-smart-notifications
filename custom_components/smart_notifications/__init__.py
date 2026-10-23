@@ -62,7 +62,9 @@ async def async_deliver_profile(hass: HomeAssistant, config_data: dict[str, Any]
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the domain and its central action."""
 
-    hass.data.setdefault(DOMAIN, {"entries": {}, "history": deque(maxlen=100)})
+    runtime = hass.data.setdefault(DOMAIN, {})
+    runtime.setdefault("entries", {})
+    runtime.setdefault("history", deque(maxlen=100))
 
     async def async_send(call: ServiceCall) -> None:
         entries = hass.config_entries.async_entries(DOMAIN)
@@ -116,19 +118,34 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             return
         await async_send(ServiceCall(DOMAIN, SERVICE_SEND, {ATTR_REASON: call.data[ATTR_REASON], ATTR_CONTEXT: {}}))
 
-    hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=CONFIG_SCHEMA)
-    hass.services.async_register(DOMAIN, SERVICE_TEST_DEVICE, async_test_device, schema=TEST_DEVICE_SCHEMA)
-    hass.services.async_register(DOMAIN, SERVICE_TEST_EVENT, async_test_event, schema=TEST_EVENT_SCHEMA)
+    if not hass.services.has_service(DOMAIN, SERVICE_SEND):
+        hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=CONFIG_SCHEMA)
+    if not hass.services.has_service(DOMAIN, SERVICE_TEST_DEVICE):
+        hass.services.async_register(DOMAIN, SERVICE_TEST_DEVICE, async_test_device, schema=TEST_DEVICE_SCHEMA)
+    if not hass.services.has_service(DOMAIN, SERVICE_TEST_EVENT):
+        hass.services.async_register(DOMAIN, SERVICE_TEST_EVENT, async_test_event, schema=TEST_EVENT_SCHEMA)
     await async_setup_frontend(hass)
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    hass.data.setdefault(DOMAIN, {"entries": {}, "history": deque(maxlen=100)})
-    hass.data[DOMAIN]["entries"][entry.entry_id] = entry
+    runtime = hass.data.setdefault(DOMAIN, {})
+    runtime.setdefault("entries", {})
+    runtime.setdefault("history", deque(maxlen=100))
+    runtime["entries"][entry.entry_id] = entry
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate Beta.1 options without removing user configuration."""
+    hass.config_entries.async_update_entry(
+        entry,
+        options=merged_config(entry.options),
+        version=2,
+    )
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    hass.data[DOMAIN]["entries"].pop(entry.entry_id, None)
+    hass.data.get(DOMAIN, {}).get("entries", {}).pop(entry.entry_id, None)
     return True

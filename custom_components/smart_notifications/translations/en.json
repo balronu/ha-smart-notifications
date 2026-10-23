@@ -1,4 +1,29 @@
 {
-  "config": {"step": {"user": {"title": "Smart Notifications", "description": "Configure centralized outputs. {device_count} compatible entities were found."}}, "abort": {"already_configured": "Smart Notifications is already configured."}},
-  "options": {"step": {"init": {"title": "Smart Notifications", "menu": {"settings": "General settings", "devices": "Manage output devices", "events": "Event catalog and texts", "event_devices": "Event → devices", "device_events": "Device → events", "test_device": "Test one device", "test_event": "Test an event"}}, "settings": {"title": "General settings", "data": {"tts_entity": "TTS engine", "title": "Notification title", "dedup_seconds": "Deduplication window (seconds)"}}, "devices": {"title": "Add output device", "data": {"entity_id": "Entity"}}, "events": {"title": "Edit event", "data": {"reason": "Event", "name": "Name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}}, "event_devices": {"title": "Event → devices", "data": {"reason": "Event", "devices": "Output devices"}}, "device_events": {"title": "Device → events", "data": {"device": "Device", "events": "Events"}}, "test_device": {"title": "Test one device", "description": "Only confirmation sends a test output.", "data": {"device": "Device", "message": "Test message", "confirm": "Really send test output"}}, "test_event": {"title": "Test an event", "description": "Only confirmation runs the configured outputs.", "data": {"reason": "Event", "confirm": "Really send test output"}}}}
+  "config": {
+    "step": {
+      "user": {
+        "title": "Smart Notifications",
+        "description": "Configure centralized outputs. Found: {media_player_count} TTS output devices, {notify_count} push services and {tts_count} TTS engines.",
+        "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"},
+        "data_description": {"tts_entity": "The TTS engine used to create audio for selected media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}
+      }
+    },
+    "abort": {"already_configured": "Smart Notifications is already configured."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Smart Notifications",
+        "menu_options": {"settings": "Output options", "devices": "Manage devices", "events": "Manage events and messages", "event_devices": "Assign events → devices", "device_events": "Assign devices → events", "test_device": "Test one device", "test_event": "Test an event"},
+        "menu_option_descriptions": {"settings": "TTS engine, default title and duplicate protection.", "devices": "Select TTS output devices and push services.", "events": "Edit events, default messages and priorities.", "event_devices": "Choose outputs for one event.", "device_events": "Choose events for one device.", "test_device": "Test one output after confirmation.", "test_event": "Test a complete event after confirmation."}
+      },
+      "settings": {"title": "Output options", "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"}, "data_description": {"tts_entity": "The TTS engine used to create audio for media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}},
+      "devices": {"title": "Manage devices", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "physical_group": "Manual physical group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "physical_group": "The same group name can join alternate entities of one physical device."}},
+      "events": {"title": "Manage events and messages", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}},
+      "event_devices": {"title": "Assign events → devices", "data": {"reason": "Event", "devices": "Output devices"}},
+      "device_events": {"title": "Assign devices → events", "data": {"device": "Device", "events": "Events"}},
+      "test_device": {"title": "Test one device", "description": "An output is sent only after explicit confirmation.", "data": {"device_id": "Device", "message": "Test message", "confirm": "Really send test output"}},
+      "test_event": {"title": "Test an event", "description": "Configured outputs are executed only after explicit confirmation.", "data": {"reason": "Event", "confirm": "Really send test output"}}
+    }
+  }
 }

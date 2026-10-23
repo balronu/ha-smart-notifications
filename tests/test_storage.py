@@ -17,3 +17,9 @@ def test_options_are_merged_without_mutating_defaults():
 def test_same_event_has_one_shared_message_field():
     event = default_config()["events"]["washer_finished"]
     assert set(event) == {"name", "message", "enabled", "priority"}
+
+
+def test_partial_beta1_options_keep_default_catalog():
+    config = merged_config({"events": {"washer_finished": {"message": "Neu"}}})
+    assert config["events"]["washer_finished"]["message"] == "Neu"
+    assert config["events"]["smoke_detected"]["message"]

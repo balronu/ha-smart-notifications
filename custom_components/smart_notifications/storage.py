@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from .const import CONF_ROUTES, DEFAULT_CONFIG
+from .const import CONF_DEVICES, CONF_EVENTS, CONF_ROUTES, DEFAULT_CONFIG
 
 UUID_RE = re.compile(r"^[0-9a-f]{32}$", re.IGNORECASE)
 
@@ -22,7 +22,10 @@ def default_config() -> dict[str, Any]:
 def merged_config(options: dict[str, Any] | None) -> dict[str, Any]:
     config = default_config()
     for key, value in (options or {}).items():
-        config[key] = deepcopy(value)
+        if key in (CONF_EVENTS, CONF_DEVICES, CONF_ROUTES) and isinstance(value, dict):
+            config[key].update(deepcopy(value))
+        else:
+            config[key] = deepcopy(value)
     return config
 
 
@@ -56,9 +59,27 @@ def discovered_devices(hass: HomeAssistant) -> list[dict[str, Any]]:
                 "domain": entity.domain,
                 "channel": "tts" if entity.domain == "media_player" else "notify",
                 "physical_key": physical_key(hass, entity.entity_id),
+                "physical_confidence": "high" if entity.device_id else "low",
+                "physical_evidence": "Home-Assistant-Gerät" if entity.device_id else "Keine gemeinsame Geräte-ID",
             }
         )
     return sorted(result, key=lambda item: item["entity_id"])
+
+
+def discovered_tts_entities(hass: HomeAssistant) -> list[dict[str, str]]:
+    """Return TTS engines separately from output devices."""
+    registry = er.async_get(hass)
+    return sorted(
+        [
+            {
+                "entity_id": entity.entity_id,
+                "name": entity.name or entity.original_name or entity.entity_id,
+            }
+            for entity in registry.entities.values()
+            if entity.domain == "tts"
+        ],
+        key=lambda item: item["entity_id"],
+    )
 
 
 def route_map(config: dict[str, Any], reason: str) -> list[str]:
