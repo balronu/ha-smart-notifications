@@ -167,7 +167,7 @@ async def test_actual_config_and_options_flows_accept_piper_and_show_menu(
     options = await hass.config_entries.options.async_init(entry_id)
     assert options["type"] == "menu"
     assert set(options["menu_options"]) == {
-        "settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"
+        "settings", "devices", "events", "discover_notifications", "event_devices", "device_events", "test_device", "test_event"
     }
     settings = await hass.config_entries.options.async_configure(
         options["flow_id"], {"next_step_id": "settings"}
@@ -255,6 +255,75 @@ async def test_actual_options_device_menu_steps_are_supported(
 
 
 @pytest.mark.asyncio
+async def test_actual_options_event_crud_preserves_stable_id_and_routes(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    hass.states.async_set("tts.piper", "idle", {"friendly_name": "Piper"})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"tts_entity": "tts.piper", "title": "Test", "dedup_seconds": 30}
+    )
+    entry_id = result["result"].entry_id
+    entry = hass.config_entries.async_get_entry(entry_id)
+    hass.config_entries.async_update_entry(entry, options={
+        **entry.options,
+        "events": {"garden_alarm": {"name": "Alarm", "message": "Alt", "enabled": True}},
+        "routes": {"garden_alarm": []},
+    })
+    options = await hass.config_entries.options.async_init(entry_id)
+    events = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "events"}
+    )
+    assert set(events["menu_options"]) == {
+        "events_add_form", "events_edit_form", "events_remove_form", "back"
+    }
+    add = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "events_add_form"}
+    )
+    assert add["type"] == "form"
+    created = await hass.config_entries.options.async_configure(
+        options["flow_id"],
+        {
+            "reason": "beta7_event",
+            "name": "Waschmaschine",
+            "message": "Fertig",
+            "description": "Test",
+            "enabled": True,
+            "priority": "normal",
+            "dedup_seconds": 10,
+        },
+    )
+    assert created["type"] == "menu"
+    edit = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "events_edit_form"}
+    )
+    assert edit["type"] == "form"
+    edited = await hass.config_entries.options.async_configure(
+        options["flow_id"],
+        {
+            "reason": "beta7_event",
+            "name": "Waschmaschine neu",
+            "message": "Fertig neu",
+            "description": "Test",
+            "enabled": False,
+            "priority": "high",
+            "dedup_seconds": 20,
+        },
+    )
+    assert edited["type"] == "menu"
+    assert hass.config_entries.async_get_entry(entry_id).options["events"]["beta7_event"]["enabled"] is False
+    remove = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "events_remove_form"}
+    )
+    assert remove["type"] == "form"
+    removed = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"reason": "beta7_event", "confirm": True}
+    )
+    assert removed["type"] == "menu"
+    assert "beta7_event" not in hass.config_entries.async_get_entry(entry_id).options["events"]
+
+
+@pytest.mark.asyncio
 async def test_real_german_options_translations_include_main_and_back_labels(hass: HomeAssistant):
     translations = await async_get_translations(
         hass, "de", "options", integrations={DOMAIN}
@@ -268,5 +337,6 @@ async def test_real_german_options_translations_include_main_and_back_labels(has
     assert translations[f"{prefix}devices.menu_options.devices_edit_form"] == "Ausgabegerät bearbeiten"
     assert translations[f"{prefix}devices.menu_options.devices_remove_form"] == "Ausgabegerät entfernen"
     assert translations[f"{prefix}devices_edit_form.data.enabled"] == "Aktiviert"
+    assert translations[f"{prefix}init.menu_options.discover_notifications"] == "Benachrichtigungen erkennen"
     assert translations[f"{prefix}test_device_form.data.device_id"] == "Ausgabegerät"
     assert "device_count" not in " ".join(translations.values())

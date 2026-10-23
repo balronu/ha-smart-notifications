@@ -16,12 +16,35 @@ async def test_options_flow_persists_shared_event_and_route_data(hass: HomeAssis
     flow.handler = entry.entry_id
     result = await flow.async_step_events()
     assert result["type"] == "menu"
-    assert set(result["menu_options"]) == {"events_form", "back"}
+    assert set(result["menu_options"]) == {"events_add_form", "events_edit_form", "events_remove_form", "back"}
     result = await flow.async_step_events_form(
         {"reason": "washer_finished", "name": "Washer", "message": "Fertig", "enabled": True, "priority": "high"}
     )
     assert result["type"] == "menu"
     assert entry.options["events"]["washer_finished"]["message"] == "Fertig"
+
+
+@pytest.mark.asyncio
+async def test_event_crud_keeps_stable_id_and_cleans_route(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"routes": {"garden_alarm": ["device"]}})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+    result = await flow.async_step_events_add_form({
+        "reason": "garden_alarm", "name": "Gartenalarm", "message": "Alarm", "description": "Test", "enabled": True, "priority": "high", "dedup_seconds": 15
+    })
+    assert result["type"] == "menu"
+    result = await flow.async_step_events_edit_form({
+        "reason": "garden_alarm", "name": "Gartenalarm neu", "message": "Alarm neu", "description": "Test", "enabled": False, "priority": "critical", "dedup_seconds": 20
+    })
+    assert result["type"] == "menu"
+    assert entry.options["events"]["garden_alarm"]["name"] == "Gartenalarm neu"
+    await flow.async_step_events_remove_form({"reason": "garden_alarm", "confirm": False})
+    assert "garden_alarm" in entry.options["events"]
+    await flow.async_step_events_remove_form({"reason": "garden_alarm", "confirm": True})
+    assert "garden_alarm" not in entry.options["events"]
+    assert "garden_alarm" not in entry.options["routes"]
 
 
 @pytest.mark.asyncio
@@ -86,8 +109,22 @@ async def test_options_menu_exposes_translated_supported_steps(hass: HomeAssista
     result = await flow.async_step_init()
     assert result["type"] == "menu"
     assert set(result["menu_options"]) == {
-        "settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"
+        "settings", "devices", "events", "discover_notifications", "event_devices", "device_events", "test_device", "test_event"
     }
+
+
+@pytest.mark.asyncio
+async def test_discovery_scan_is_manual_and_returns_to_menu(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+    result = await flow.async_step_discover_notifications()
+    assert result["type"] == "menu"
+    result = await flow.async_step_discover_scan_form({"confirm": True})
+    assert result["type"] == "menu"
+    assert entry.options["discovery"]["candidates"] == {}
 
 
 def _discovered_devices():
