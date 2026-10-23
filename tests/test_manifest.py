@@ -5,7 +5,7 @@ from pathlib import Path
 def test_manifest_version_and_domain():
     data = json.loads(Path("custom_components/smart_notifications/manifest.json").read_text())
     assert data["domain"] == "smart_notifications"
-    assert data["version"] == "0.1.0-beta.11"
+    assert data["version"] == "0.1.0-beta.12"
     assert data["config_flow"] is True
 
 

@@ -24,7 +24,7 @@ def test_card_contains_editor_and_deliberate_test_api():
     assert 'card.type==="smart-notifications-card"' in source
     assert 'customElements.define("smart-notifications-card"' in source
     assert 'getConfigElement()' in source
-    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.11")
+    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.12")
 
 
 def test_editor_defers_dom_replacement_during_mobile_interaction():
@@ -37,6 +37,8 @@ def test_editor_defers_dom_replacement_during_mobile_interaction():
     assert 'root.addEventListener("pointerdown"' in source
     assert 'root.addEventListener("pointerup"' in source
     assert "this._eventEdit" in source
+    assert "_interactionReleaseTimer" in source
+    assert 'root.addEventListener("click"' in source
 
 
 def test_editor_keeps_all_interactive_fields_in_stable_dom():
@@ -45,6 +47,12 @@ def test_editor_keeps_all_interactive_fields_in_stable_dom():
     assert 'root.querySelector("#preview-event")' in source
     assert 'root.querySelector("#save-event")' in source
     assert 'root.querySelectorAll("[data-event-device]")' in source or "data-event-device" in source
+    fixture = Path("tests/browser-fixture.html").read_text()
+    assert "edit-event" in fixture
+    assert "select" in fixture
+    assert "card.hass={...hass}" in fixture
+    assert "save-event" in fixture
+    assert "cancel-event" in fixture
 
 
 @pytest.mark.asyncio

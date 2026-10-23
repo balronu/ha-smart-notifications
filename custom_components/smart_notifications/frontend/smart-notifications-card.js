@@ -29,10 +29,11 @@ class SmartNotificationsCard extends HTMLElement {
   }
   renderIfSafe(force = false) { if (force || !this._interactionActive) this.render(); else this._pendingRender = true; }
   finishInteraction() {
-    setTimeout(() => {
+    clearTimeout(this._interactionReleaseTimer);
+    this._interactionReleaseTimer = setTimeout(() => {
       this._interactionActive = Boolean(this.shadowRoot?.activeElement);
       if (!this._interactionActive && this._pendingRender) { this._pendingRender = false; if (!this._eventEdit) this.render(); }
-    }, 0);
+    }, 500);
   }
   statusLabel(v) { return ({ new: this.t("Neu", "New"), unchanged: this.t("Unverändert", "Unchanged"), changed: this.t("Geändert", "Changed"), adopted: this.t("Übernommen", "Adopted"), ignored: this.t("Ignoriert", "Ignored"), not_found: this.t("Nicht mehr gefunden", "Missing"), review: this.t("Prüfen", "Review") })[v] || this.t("Unbekannt", "Unknown"); }
   typeLabel(v) { return ({ static: this.t("Statischer Text", "Static text"), template: "Template", parameters: this.t("Laufzeitparameter", "Runtime parameters"), combined: this.t("Kombiniert", "Combined"), tts: "TTS", push: "Push", music_assistant: "Music Assistant", other: this.t("Sonstige", "Other") })[v] || v || this.t("Nicht angegeben", "Not specified"); }
@@ -44,6 +45,7 @@ class SmartNotificationsCard extends HTMLElement {
   }
   render() {
     if (!this.shadowRoot) return;
+    this._pendingRender = false;
     const d = this.data || { devices: [], events: [], configured: false };
     this.shadowRoot.innerHTML = `<style>:host{display:block}ha-card{padding:16px;color:var(--primary-text-color)}h2{margin:0 0 12px;color:var(--primary-color)}h3{margin:0 0 7px}.section{margin-top:20px;font-weight:600}.muted{color:var(--secondary-text-color);font-size:.86em}.ok{color:var(--success-color,#43a047)}.bad{color:var(--error-color,#d32f2f)}.tools,.row,.devices{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tools{margin:8px 0}.tools input{flex:1;min-width:160px}.row{border-top:1px solid var(--divider-color);padding:9px 0}.name{flex:1;min-width:170px}.candidate,.event-editor{border:1px solid var(--divider-color);border-radius:6px;margin:8px 0;padding:10px}.pill{display:inline-block;border-radius:12px;padding:2px 8px;margin-right:4px;background:var(--secondary-background-color);font-size:.8em}.detail{background:var(--secondary-background-color);padding:9px;margin-top:8px;overflow-wrap:anywhere}.detail dl{display:grid;grid-template-columns:minmax(120px,30%) 1fr;gap:4px;margin:0}.detail dt{font-weight:600}.detail dd{margin:0}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}.form-grid label,.event-editor>label{display:grid;gap:4px}button{border:0;border-radius:4px;padding:8px 12px;background:var(--primary-color);color:var(--text-primary-color,#fff);cursor:pointer}button.secondary{background:var(--secondary-background-color);color:var(--primary-text-color)}input,select,textarea{box-sizing:border-box;padding:8px;min-width:150px;background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:4px}textarea{width:100%;min-height:110px;font-family:monospace}@media(max-width:500px){ha-card{padding:12px}.detail dl{grid-template-columns:1fr}.tools>*{width:100%}}</style><ha-card><h2>${this.escape(this.config?.title || "Smart Notifications")}</h2><div class="${d.configured ? "ok" : "bad"}">${d.configured ? this.t("Bereit", "Ready") : this.t("Nicht konfiguriert", "Not configured")}</div><div class="section">${this.t("Ereignisse", "Events")}</div>${this.renderEvents(d)}<div class="section">${this.t("Benachrichtigungen erkennen", "Discover notifications")}</div><div class="muted">${this.escape(this.discovery?.source_scope || this.t("Nur automations.yaml und scripts.yaml; keine privaten Storage-APIs.", "Only automations.yaml and scripts.yaml; no private Storage APIs."))}</div><div class="tools"><input id="search" placeholder="${this.t("Suche nach Name, Text, Ziel oder Quelle", "Search name, text, target or source")}" value="${this.escape(this._query || "")}"><select id="filter"><option value="all">${this.t("Alle", "All")}</option><option value="new">${this.t("Neu", "New")}</option><option value="adopted">${this.t("Übernommen", "Adopted")}</option><option value="changed">${this.t("Geändert", "Changed")}</option><option value="ignored">${this.t("Ignoriert", "Ignored")}</option><option value="tts">TTS</option><option value="push">Push</option><option value="automation">${this.t("Automation", "Automation")}</option><option value="script">${this.t("Skript", "Script")}</option></select><button id="scan">${this.t("Scan starten", "Start scan")}</button></div><div id="candidates">${this.renderCandidates()}</div><div class="section">${this.t("Ausgabegeräte", "Output devices")}</div>${d.devices?.length ? d.devices.map(x => `<div class="row"><span class="name">${this.escape(x.name)}<br><span class="muted">${this.escape(x.channel || "")} · ${x.available ? this.t("verfügbar", "available") : this.t("offline", "offline")}</span></span></div>`).join("") : `<div class="muted">${this.t("Keine Geräte konfiguriert.", "No devices configured.")}</div>`}${this.error ? `<div class="bad">${this.escape(String(this.error))}</div>` : ""}</ha-card>`;
     this.bind();
@@ -65,6 +67,13 @@ class SmartNotificationsCard extends HTMLElement {
       root.addEventListener("focusout", () => this.finishInteraction(), { capture: true });
       root.addEventListener("pointerdown", () => { this._interactionActive = true; }, { capture: true });
       root.addEventListener("pointerup", () => this.finishInteraction(), { capture: true });
+      // Mobile browsers may synthesize click after pointerup. Give that click
+      // the first chance to run before applying a pending background rebuild.
+      root.addEventListener("click", () => {
+        clearTimeout(this._interactionReleaseTimer);
+        this._interactionActive = true;
+        setTimeout(() => this.finishInteraction(), 0);
+      }, { capture: true });
       root._smartNotificationsInteractionBound = true;
     }
     root.querySelector("#scan")?.addEventListener("click", () => this.mutate({ action: "scan" }));
