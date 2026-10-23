@@ -48,10 +48,16 @@ TEST_EVENT_SCHEMA = vol.Schema({vol.Required(ATTR_REASON): cv.string, vol.Option
 
 async def async_deliver_profile(hass: HomeAssistant, config_data: dict[str, Any], profile: dict[str, Any], message: str, *, test: bool = False) -> None:
     """Deliver one message using only native Home Assistant actions."""
+    entity_state = hass.states.get(profile["entity_id"])
+    if entity_state is None or entity_state.state in ("unavailable", "unknown"):
+        raise ServiceValidationError("device_unavailable")
     if profile["channel"] == "tts":
         tts_entity = config_data.get(CONF_TTS_ENTITY)
         if not tts_entity:
-            raise ServiceValidationError("Keine TTS-Engine konfiguriert")
+            raise ServiceValidationError("tts_unavailable")
+        tts_state = hass.states.get(tts_entity)
+        if tts_state is None or tts_state.state in ("unavailable", "unknown"):
+            raise ServiceValidationError("tts_unavailable")
         await hass.services.async_call("tts", "speak", {"media_player_entity_id": profile["entity_id"], "message": message}, target={"entity_id": tts_entity}, blocking=True)
     elif profile["channel"] == "notify":
         await hass.services.async_call("notify", "send_message", {"message": message, "title": "Smart Notifications Test" if test else config_data.get(CONF_TITLE)}, target={"entity_id": profile["entity_id"]}, blocking=True)
@@ -66,20 +72,28 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     runtime.setdefault("entries", {})
     runtime.setdefault("history", deque(maxlen=100))
 
-    async def async_send(call: ServiceCall) -> None:
+    async def async_send_event(reason: str, context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         entries = hass.config_entries.async_entries(DOMAIN)
         if not entries:
             raise ServiceValidationError("Smart Notifications ist nicht konfiguriert")
         entry = entries[0]
         config_data = merged_config(entry.options)
-        reason = call.data[ATTR_REASON]
         event = config_data[CONF_EVENTS].get(reason)
         if not event or not event.get("enabled", True):
-            raise ServiceValidationError(f"Unbekanntes oder deaktiviertes Ereignis: {reason}")
+            raise ServiceValidationError("event_not_found")
+        if not (event.get("message") or "").strip():
+            raise ServiceValidationError("message_missing")
         template = Template(event["message"], hass)
-        message = template.async_render(call.data.get(ATTR_CONTEXT, {}), parse_result=False)
+        message = template.async_render(context or {}, parse_result=False)
         selected = route_map(config_data, reason)
         profiles = config_data[CONF_DEVICES]
+        selected_profiles = [
+            profiles[profile_id]
+            for profile_id in selected
+            if profile_id in profiles and profiles[profile_id].get("enabled", True)
+        ]
+        if not selected_profiles:
+            raise ServiceValidationError("no_event_devices")
         seen_physical: set[str] = set()
         deliveries = []
         for profile_id in selected:
@@ -100,6 +114,10 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         hass.data[DOMAIN]["history"].appendleft(
             {"timestamp": datetime.now().isoformat(), "reason": reason, "message": message, "deliveries": deliveries}
         )
+        return deliveries
+
+    async def async_send(call: ServiceCall) -> None:
+        await async_send_event(call.data[ATTR_REASON], call.data.get(ATTR_CONTEXT, {}))
 
     async def async_test_device(call: ServiceCall) -> None:
         entries = hass.config_entries.async_entries(DOMAIN)
@@ -116,7 +134,12 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         entries = hass.config_entries.async_entries(DOMAIN)
         if not entries or not call.data.get(ATTR_CONFIRM):
             return
-        await async_send(ServiceCall(DOMAIN, SERVICE_SEND, {ATTR_REASON: call.data[ATTR_REASON], ATTR_CONTEXT: {}}))
+        deliveries = await async_send_event(call.data[ATTR_REASON], {})
+        failed = [delivery for delivery in deliveries if delivery["status"] == "failed"]
+        if failed and len(failed) == len(deliveries):
+            raise ServiceValidationError("all_deliveries_failed")
+        if failed:
+            raise ServiceValidationError("partial_delivery")
 
     if not hass.services.has_service(DOMAIN, SERVICE_SEND):
         hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=SEND_SCHEMA)

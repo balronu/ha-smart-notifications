@@ -2,7 +2,7 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.4` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.5` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
@@ -59,7 +59,7 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.4` release adds native nested Options Flow menus with an explicit back-to-main-menu action, complete German and English labels, human-readable device choices, and clear empty-device guidance. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.5` release adds native device editing, disabling, duplicate prevention and confirmed removal with route cleanup, and fixes event-test error handling. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
 The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 

@@ -5,6 +5,7 @@ import smart_notifications
 from homeassistant import loader
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from smart_notifications import async_setup, async_setup_entry, async_unload_entry
@@ -30,6 +31,9 @@ async def test_action_uses_shared_message_and_suppresses_physical_duplicate(hass
     notify_call = AsyncMock()
     hass.services.async_register("tts", "speak", tts_call)
     hass.services.async_register("notify", "send_message", notify_call)
+    hass.states.async_set("tts.piper", "idle")
+    hass.states.async_set("media_player.hub", "idle")
+    hass.states.async_set("notify.hub", "idle")
     await async_setup(hass, {})
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -56,6 +60,7 @@ async def test_action_uses_shared_message_and_suppresses_physical_duplicate(hass
 async def test_explicit_device_test_requires_confirmation_and_supports_push(hass: HomeAssistant):
     notify_call = AsyncMock()
     hass.services.async_register("notify", "send_message", notify_call)
+    hass.states.async_set("notify.phone", "idle")
     await async_setup(hass, {})
     entry = MockConfigEntry(domain=DOMAIN, data={}, options={"devices": {"phone": {"entity_id": "notify.phone", "channel": "notify", "enabled": True}}, "events": {}, "routes": {}})
     entry.add_to_hass(hass)
@@ -65,6 +70,60 @@ async def test_explicit_device_test_requires_confirmation_and_supports_push(hass
     await hass.services.async_call(DOMAIN, "test_device", {"device_id": "phone", "message": "Probe", "confirm": True}, blocking=True)
     assert notify_call.await_count == 1
     assert notify_call.await_args.args[0].data["message"] == "Probe"
+
+
+@pytest.mark.asyncio
+async def test_event_test_uses_current_service_call_contract_and_delivers_tts(hass: HomeAssistant):
+    tts_call = AsyncMock()
+    hass.services.async_register("tts", "speak", tts_call)
+    hass.states.async_set("tts.piper", "idle")
+    hass.states.async_set("media_player.hub", "idle")
+    await async_setup(hass, {})
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={},
+        options={
+            "tts_entity": "tts.piper",
+            "events": {"water_running": {"name": "Wasser", "message": "Das Wasser läuft noch.", "enabled": True}},
+            "devices": {"hub": {"entity_id": "media_player.hub", "channel": "tts", "enabled": True}},
+            "routes": {"water_running": ["hub"]},
+        },
+    )
+    entry.add_to_hass(hass)
+    await async_setup_entry(hass, entry)
+
+    await hass.services.async_call(
+        DOMAIN,
+        "test_event",
+        {"reason": "water_running", "confirm": True},
+        blocking=True,
+    )
+
+    assert tts_call.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_event_test_reports_missing_output_devices(hass: HomeAssistant):
+    await async_setup(hass, {})
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={},
+        options={
+            "events": {"water_running": {"name": "Wasser", "message": "Das Wasser läuft noch.", "enabled": True}},
+            "devices": {},
+            "routes": {},
+        },
+    )
+    entry.add_to_hass(hass)
+    await async_setup_entry(hass, entry)
+
+    with pytest.raises(ServiceValidationError, match="no_event_devices"):
+        await hass.services.async_call(
+            DOMAIN,
+            "test_event",
+            {"reason": "water_running", "confirm": True},
+            blocking=True,
+        )
 
 
 @pytest.mark.asyncio
@@ -133,5 +192,8 @@ async def test_real_german_options_translations_include_main_and_back_labels(has
         translations[f"{prefix}devices.menu_options.back"]
         == "Zurück zum Hauptmenü"
     )
+    assert translations[f"{prefix}devices.menu_options.devices_edit"] == "Ausgabegerät bearbeiten"
+    assert translations[f"{prefix}devices.menu_options.devices_remove"] == "Ausgabegerät entfernen"
+    assert translations[f"{prefix}devices_edit_form.data.enabled"] == "Aktiviert"
     assert translations[f"{prefix}test_device_form.data.device_id"] == "Ausgabegerät"
     assert "device_count" not in " ".join(translations.values())

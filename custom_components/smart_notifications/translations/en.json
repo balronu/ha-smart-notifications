@@ -11,6 +11,18 @@
     "abort": {"already_configured": "Smart Notifications is already configured."}
   },
   "options": {
+    "error": {
+      "event_not_found": "The selected event is not available.",
+      "message_missing": "No message text is saved for this event.",
+      "no_event_devices": "No output devices are configured for this event yet.",
+      "device_unavailable": "At least one output device is unavailable.",
+      "tts_unavailable": "The configured TTS engine is unavailable.",
+      "notify_unavailable": "The configured notification target is unavailable.",
+      "all_deliveries_failed": "No output could be sent.",
+      "partial_delivery": "The event was only partially delivered. At least one target failed.",
+      "test_failed": "The test could not be completed because of an unexpected output or connection error.",
+      "duplicate_entity": "This output device is already configured."
+    },
     "abort": {"no_devices": "Please add an output device first.", "no_discovered_devices": "No compatible output devices were found."},
     "step": {
       "init": {
@@ -20,8 +32,10 @@
       },
       "settings": {"title": "Basic settings", "menu_options": {"settings_form": "Edit basic settings", "back": "Back to main menu"}, "menu_option_descriptions": {"settings_form": "Edit the TTS engine, default title and duplicate protection.", "back": "Return without applying unsaved changes."}},
       "settings_form": {"title": "Basic settings", "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"}, "data_description": {"tts_entity": "The TTS engine used to create audio for media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}},
-      "devices": {"title": "Output devices", "menu_options": {"devices_form": "Add output device", "back": "Back to main menu"}, "menu_option_descriptions": {"devices_form": "Select a compatible voice or push device.", "back": "Return without applying unsaved changes."}},
-      "devices_form": {"title": "Add output device", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "physical_group": "Physical device group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "physical_group": "The same group name can join alternate entities of one physical device."}},
+      "devices": {"title": "Output devices", "menu_options": {"devices_add": "Add output device", "devices_edit": "Edit output device", "devices_remove": "Remove output device", "back": "Back to main menu"}, "menu_option_descriptions": {"devices_add": "Select a compatible voice or push device.", "devices_edit": "Change a device name, assignment or enabled state.", "devices_remove": "Remove a device from Smart Notifications configuration.", "back": "Return without applying unsaved changes."}},
+      "devices_add_form": {"title": "Add output device", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "alias": "Display name (optional)", "physical_group": "Physical device group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "alias": "A custom name is shown in selection fields.", "physical_group": "The same group name can join alternate entities of one physical device."}},
+      "devices_edit_form": {"title": "Edit output device", "data": {"device_id": "Configured output device", "entity_id": "Preferred output entity", "alias": "Display name (optional)", "physical_group": "Physical device group (optional)", "enabled": "Enabled"}, "data_description": {"device_id": "The device to edit.", "entity_id": "The entity used for this profile.", "physical_group": "Alternate entities of the same physical device can be grouped."}},
+      "devices_remove_form": {"title": "Remove output device", "description": "Only the Smart Notifications configuration is changed. The Home Assistant entity remains.", "data": {"device_id": "Output device", "confirm": "Really remove this output device"}},
       "events": {"title": "Events", "menu_options": {"events_form": "Edit event", "back": "Back to main menu"}, "menu_option_descriptions": {"events_form": "Edit the display name, shared message and priority.", "back": "Return without applying unsaved changes."}},
       "events_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}},
       "event_devices": {"title": "Event → devices", "menu_options": {"event_devices_form": "Edit assignment", "back": "Back to main menu"}, "menu_option_descriptions": {"event_devices_form": "Assign output devices to an event.", "back": "Return without applying unsaved changes."}},

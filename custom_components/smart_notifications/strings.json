@@ -11,6 +11,18 @@
     "abort": {"already_configured": "Smart Notifications ist bereits eingerichtet."}
   },
   "options": {
+    "error": {
+      "event_not_found": "Das ausgewählte Ereignis ist nicht verfügbar.",
+      "message_missing": "Für dieses Ereignis ist kein Nachrichtentext gespeichert.",
+      "no_event_devices": "Für dieses Ereignis sind noch keine Ausgabegeräte konfiguriert.",
+      "device_unavailable": "Mindestens ein Ausgabegerät ist nicht verfügbar.",
+      "tts_unavailable": "Die konfigurierte TTS-Engine ist nicht verfügbar.",
+      "notify_unavailable": "Das konfigurierte Benachrichtigungsziel ist nicht verfügbar.",
+      "all_deliveries_failed": "Keine Ausgabe konnte gesendet werden.",
+      "partial_delivery": "Das Ereignis wurde teilweise ausgegeben. Mindestens ein Ziel ist fehlgeschlagen.",
+      "test_failed": "Der Test konnte wegen eines unerwarteten Ausgabe- oder Verbindungsfehlers nicht abgeschlossen werden.",
+      "duplicate_entity": "Dieses Ausgabegerät ist bereits konfiguriert."
+    },
     "abort": {"no_devices": "Bitte zuerst ein Ausgabegerät hinzufügen.", "no_discovered_devices": "Es wurden keine kompatiblen Ausgabegeräte gefunden."},
     "step": {
       "init": {
@@ -20,8 +32,10 @@
       },
       "settings": {"title": "Grundeinstellungen", "menu_options": {"settings_form": "Grundeinstellungen bearbeiten", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"settings_form": "TTS-Engine, Standardtitel und Duplikatschutz bearbeiten.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},
       "settings_form": {"title": "Grundeinstellungen", "data": {"tts_entity": "TTS-Engine", "title": "Standardtitel", "dedup_seconds": "Duplikatschutz (Sekunden)"}, "data_description": {"tts_entity": "Die TTS-Engine, die Audio für Media Player erzeugt.", "title": "Titel für schriftliche Benachrichtigungen.", "dedup_seconds": "Zeitfenster, in dem gleiche Ausgaben unterdrückt werden."}},
-      "devices": {"title": "Ausgabegeräte", "menu_options": {"devices_form": "Ausgabegerät hinzufügen", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"devices_form": "Ein kompatibles Sprach- oder Push-Gerät auswählen.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},
-      "devices_form": {"title": "Ausgabegerät hinzufügen", "description": "Media Player werden als TTS-Ausgabegeräte erkannt. Notify-Entitäten werden als Push-Dienste erkannt. Eine manuelle physische Gruppe verbindet nur ausdrücklich bestätigte Entitäten.", "data": {"entity_id": "Ausgabegerät oder Push-Dienst", "physical_group": "Physische Gerätegruppe (optional)"}, "data_description": {"entity_id": "Piper und andere TTS-Engines werden separat ausgewählt und sind keine Lautsprecher.", "physical_group": "Derselbe Gruppenname kann alternative Entitäten desselben physischen Geräts zusammenfassen."}},
+      "devices": {"title": "Ausgabegeräte", "menu_options": {"devices_add": "Ausgabegerät hinzufügen", "devices_edit": "Ausgabegerät bearbeiten", "devices_remove": "Ausgabegerät entfernen", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"devices_add": "Ein kompatibles Sprach- oder Push-Gerät auswählen.", "devices_edit": "Name, Zuordnung oder Aktivierung eines Geräts ändern.", "devices_remove": "Ein Gerät aus der Smart-Notifications-Konfiguration entfernen.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},
+      "devices_add_form": {"title": "Ausgabegerät hinzufügen", "description": "Media Player werden als TTS-Ausgabegeräte erkannt. Notify-Entitäten werden als Push-Dienste erkannt. Eine manuelle physische Gruppe verbindet nur ausdrücklich bestätigte Entitäten.", "data": {"entity_id": "Ausgabegerät oder Push-Dienst", "alias": "Anzeigename (optional)", "physical_group": "Physische Gerätegruppe (optional)"}, "data_description": {"entity_id": "Piper und andere TTS-Engines werden separat ausgewählt und sind keine Lautsprecher.", "alias": "Ein eigener Name wird in Auswahlfeldern angezeigt.", "physical_group": "Derselbe Gruppenname kann alternative Entitäten desselben physischen Geräts zusammenfassen."}},
+      "devices_edit_form": {"title": "Ausgabegerät bearbeiten", "data": {"device_id": "Konfiguriertes Ausgabegerät", "entity_id": "Bevorzugte Ausgabeentität", "alias": "Anzeigename (optional)", "physical_group": "Physische Gerätegruppe (optional)", "enabled": "Aktiviert"}, "data_description": {"device_id": "Das zu bearbeitende Gerät.", "entity_id": "Die Entität, die für dieses Profil verwendet wird.", "physical_group": "Alternative Entitäten desselben physischen Geräts können gruppiert werden."}},
+      "devices_remove_form": {"title": "Ausgabegerät entfernen", "description": "Es wird nur die Smart-Notifications-Konfiguration geändert. Die Home-Assistant-Entität bleibt erhalten.", "data": {"device_id": "Ausgabegerät", "confirm": "Ausgabegerät wirklich entfernen"}},
       "events": {"title": "Ereignisse", "menu_options": {"events_form": "Ereignis bearbeiten", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"events_form": "Standardtext, Anzeigename und Priorität bearbeiten.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},
       "events_form": {"title": "Ereignis bearbeiten", "data": {"reason": "Ereignis", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "enabled": "Aktiv", "priority": "Priorität"}},
       "event_devices": {"title": "Ereignis → Geräte", "menu_options": {"event_devices_form": "Zuordnung bearbeiten", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"event_devices_form": "Ausgabegeräte einem Ereignis zuordnen.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},

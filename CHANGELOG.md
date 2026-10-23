@@ -1,5 +1,21 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.5 – 2026-10-23
+
+### Deutsch
+- Ausgabegeräte können über den Options Flow hinzugefügt, bearbeitet, deaktiviert und nach ausdrücklicher Bestätigung entfernt werden.
+- Doppelte Entity-Konfigurationen werden verhindert; beim Entfernen werden Ereignisrouten bereinigt.
+- Physische Gerätegruppen und alternative Entitäten bleiben für den Duplikatschutz erhalten.
+- Der Ereignistest verwendet den aktuellen Home-Assistant-ServiceCall-Vertrag und zeigt verständliche Fehler bei fehlender oder nicht erreichbarer Ausgabe.
+- Regressionstests für Geräteverwaltung, Routenbereinigung und Ereignistests ergänzt.
+
+### English
+- Output devices can be added, edited, disabled and removed with explicit confirmation through the Options Flow.
+- Duplicate entity configuration is rejected and event routes are cleaned up when a device is removed.
+- Physical device groups and alternate entities remain available for duplicate suppression.
+- Event testing now uses the current Home Assistant ServiceCall contract and reports clear errors for missing or unavailable outputs.
+- Added regression coverage for device management, route cleanup and event testing.
+
 ## 0.1.0-beta.4 – 2026-10-23
 
 ### Deutsch
