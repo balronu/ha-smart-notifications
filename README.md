@@ -18,6 +18,8 @@ Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligente
 
 ## Installation über HACS
 
+Repository-Kategorie: **Integration**; HACS-Topics sind für die Auffindbarkeit gesetzt.
+
 1. HACS → Integrationen → Benutzerdefiniertes Repository hinzufügen.
 2. `https://github.com/balronu/ha-smart-notifications` als **Integration** hinzufügen.
 3. Die Beta-Version ausdrücklich auswählen (Pre-Releases aktivieren).
