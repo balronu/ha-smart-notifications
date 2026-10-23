@@ -1,5 +1,21 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.11 – 2026-10-23
+
+### Deutsch
+- Behoben: Das iOS-Auswahlmenü für den Nachrichtentyp schließt sich nicht mehr durch einen konkurrierenden Lovelace-DOM-Rebuild.
+- HA-State-Updates aktualisieren die Daten weiter, ersetzen aber keinen fokussierten oder berührten Ereigniseditor.
+- Fokus, Auswahlwerte, Textfelder, Textareas, Checkboxen und Geräteauswahl bleiben während der Interaktion erhalten.
+- Regressionstests für Hintergrundupdates, DOM-Stabilität und Chromium-Interaktion ergänzt.
+- Keine Änderung an produktiven Home-Assistant-Systemen, Automationen oder Benachrichtigungen.
+
+### English
+- Fixed the iOS message-type picker closing because of a competing Lovelace DOM rebuild.
+- Home Assistant state updates still refresh data but do not replace a focused or touched event editor.
+- Focus, selected values, text fields, textareas, checkboxes and device selection remain stable during interaction.
+- Added regressions for background updates, DOM identity and Chromium interaction.
+- No productive Home Assistant systems, automations or notifications were changed.
+
 ## 0.1.0-beta.10 – 2026-10-23
 
 ### Deutsch

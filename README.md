@@ -2,7 +2,7 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.10` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.11` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
@@ -61,7 +61,7 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. `v0.1.0-beta.10` adds one shared message model for static text, Home-Assistant templates, runtime parameters and combined messages. The Lovelace card provides event editing, parameter definitions, read-only previews, discovery grouping, target matching and disabled adoption. `smart_notifications.send` accepts `variables` (with legacy `context` retained), and TTS and push receive the same rendered result. Templates are rendered only by Home Assistant's supported template engine; invalid templates and missing required parameters block delivery. Existing static Beta.9 events and source automations remain unchanged. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. `v0.1.0-beta.11` stabilizes the Lovelace event editor on mobile by deferring background DOM updates while controls are focused or touched. The card retains the Beta.10 shared message model for static text, Home-Assistant templates, runtime parameters and combined messages. `smart_notifications.send` accepts `variables` (with legacy `context` retained), and TTS and push receive the same rendered result. Templates are rendered only by Home Assistant's supported template engine; invalid templates and missing required parameters block delivery. Existing static Beta.9/Beta.10 events and source automations remain unchanged. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
 The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). After upgrading, perform a hard browser refresh once so the versioned extra-module URL is loaded; no manual YAML card resource is required for the integration's card module. Discovery reads `automations.yaml` and `scripts.yaml` only; UI/Storage automations are not read through private APIs. Script calls are detected but not semantically expanded, and dynamic templates remain visible as source text for manual review rather than being evaluated. `media_player.play_media` remains a possible candidate only. Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 

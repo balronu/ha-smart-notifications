@@ -17,7 +17,7 @@ from .discovery import apply_candidate_action, async_scan
 from .message import async_render_message, normalize_event, validate_message
 from .storage import merged_config
 
-CARD_RESOURCE_URL = "/smart_notifications/smart-notifications-card.js?v=0.1.0-beta.10"
+CARD_RESOURCE_URL = "/smart_notifications/smart-notifications-card.js?v=0.1.0-beta.11"
 
 
 class SmartNotificationsStatusView(HomeAssistantView):

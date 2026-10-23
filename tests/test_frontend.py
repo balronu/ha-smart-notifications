@@ -24,7 +24,27 @@ def test_card_contains_editor_and_deliberate_test_api():
     assert 'card.type==="smart-notifications-card"' in source
     assert 'customElements.define("smart-notifications-card"' in source
     assert 'getConfigElement()' in source
-    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.10")
+    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.11")
+
+
+def test_editor_defers_dom_replacement_during_mobile_interaction():
+    source = Path("custom_components/smart_notifications/frontend/smart-notifications-card.js").read_text()
+    assert "Do not replace interactive DOM" in source
+    assert "_interactionActive" in source
+    assert "_pendingRender" in source
+    assert 'root.addEventListener("focusin"' in source
+    assert 'root.addEventListener("focusout"' in source
+    assert 'root.addEventListener("pointerdown"' in source
+    assert 'root.addEventListener("pointerup"' in source
+    assert "this._eventEdit" in source
+
+
+def test_editor_keeps_all_interactive_fields_in_stable_dom():
+    source = Path("custom_components/smart_notifications/frontend/smart-notifications-card.js").read_text()
+    assert 'root.addEventListener("change"' not in source  # native controls keep their own change lifecycle
+    assert 'root.querySelector("#preview-event")' in source
+    assert 'root.querySelector("#save-event")' in source
+    assert 'root.querySelectorAll("[data-event-device]")' in source or "data-event-device" in source
 
 
 @pytest.mark.asyncio
