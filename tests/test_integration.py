@@ -5,6 +5,7 @@ import smart_notifications
 from homeassistant import loader
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from smart_notifications import async_setup, async_setup_entry, async_unload_entry
 from smart_notifications.config_flow import SmartNotificationsConfigFlow
@@ -108,3 +109,29 @@ async def test_actual_config_and_options_flows_accept_piper_and_show_menu(
     assert set(options["menu_options"]) == {
         "settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"
     }
+    settings = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "settings"}
+    )
+    assert settings["type"] == "menu"
+    assert settings["step_id"] == "settings"
+    assert set(settings["menu_options"]) == {"settings_form", "back"}
+    main_menu = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "back"}
+    )
+    assert main_menu["type"] == "menu"
+    assert main_menu["step_id"] == "init"
+
+
+@pytest.mark.asyncio
+async def test_real_german_options_translations_include_main_and_back_labels(hass: HomeAssistant):
+    translations = await async_get_translations(
+        hass, "de", "options", integrations={DOMAIN}
+    )
+    prefix = f"component.{DOMAIN}.options.step."
+    assert translations[f"{prefix}init.menu_options.settings"] == "Grundeinstellungen"
+    assert (
+        translations[f"{prefix}devices.menu_options.back"]
+        == "Zurück zum Hauptmenü"
+    )
+    assert translations[f"{prefix}test_device_form.data.device_id"] == "Ausgabegerät"
+    assert "device_count" not in " ".join(translations.values())

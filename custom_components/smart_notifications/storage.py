@@ -7,6 +7,7 @@ from copy import deepcopy
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
@@ -49,15 +50,51 @@ def discovered_devices(hass: HomeAssistant) -> list[dict[str, Any]]:
     """Return only channels implemented by the first beta."""
     result: list[dict[str, Any]] = []
     registry = er.async_get(hass)
+    areas = ar.async_get(hass)
+    integration_names = {
+        "cast": "Google Cast",
+        "music_assistant": "Music Assistant",
+        "mobile_app": "Mobile App",
+        "notify": "Notify",
+    }
     for entity in registry.entities.values():
         if entity.domain not in ("media_player", "notify"):
             continue
+        state = hass.states.get(entity.entity_id)
+        name = (
+            entity.name
+            or entity.original_name
+            or (state.attributes.get("friendly_name") if state else None)
+            or entity.entity_id
+        )
+        config_entry = (
+            hass.config_entries.async_get_entry(entity.config_entry_id)
+            if entity.config_entry_id
+            else None
+        )
+        integration = integration_names.get(
+            config_entry.domain if config_entry else entity.domain,
+            (config_entry.domain if config_entry else entity.domain)
+            .replace("_", " ")
+            .title(),
+        )
+        channel = "tts" if entity.domain == "media_player" else "notify"
+        channel_name = "Sprachausgabe" if channel == "tts" else "Push-Benachrichtigung"
+        area_name = None
+        if entity.area_id and (area := areas.async_get_area(entity.area_id)):
+            area_name = area.name
+        display_name = f"{name} – {integration} – {channel_name}"
+        if area_name:
+            display_name = f"{name} ({area_name}) – {integration} – {channel_name}"
         result.append(
             {
                 "entity_id": entity.entity_id,
-                "name": entity.name or entity.original_name or entity.entity_id,
+                "name": name,
+                "display_name": display_name,
+                "area": area_name,
+                "integration": integration,
                 "domain": entity.domain,
-                "channel": "tts" if entity.domain == "media_player" else "notify",
+                "channel": channel,
                 "physical_key": physical_key(hass, entity.entity_id),
                 "physical_confidence": "high" if entity.device_id else "low",
                 "physical_evidence": "Home-Assistant-Gerät" if entity.device_id else "Keine gemeinsame Geräte-ID",
