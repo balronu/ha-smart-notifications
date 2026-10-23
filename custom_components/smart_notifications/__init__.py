@@ -12,7 +12,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.template import Template
 
 from .const import (
     ATTR_CONFIRM,
@@ -21,6 +20,7 @@ from .const import (
     ATTR_EVENT_KEY,
     ATTR_MESSAGE,
     ATTR_REASON,
+    ATTR_VARIABLES,
     CONF_DEVICES,
     CONF_EVENTS,
     CONF_TITLE,
@@ -32,6 +32,7 @@ from .const import (
     TEST_MESSAGE,
 )
 from .frontend import async_setup_frontend
+from .message import async_render_message
 from .storage import merged_config, route_map
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ SEND_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_REASON): cv.string,
         vol.Optional(ATTR_CONTEXT, default={}): dict,
+        vol.Optional(ATTR_VARIABLES, default={}): dict,
         vol.Optional(ATTR_EVENT_KEY): cv.string,
     }
 )
@@ -72,7 +74,10 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     runtime.setdefault("entries", {})
     runtime.setdefault("history", deque(maxlen=100))
 
-    async def async_send_event(reason: str, context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    async def async_send_event(
+        reason: str,
+        variables: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         entries = hass.config_entries.async_entries(DOMAIN)
         if not entries:
             raise ServiceValidationError("Smart Notifications ist nicht konfiguriert")
@@ -81,10 +86,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         event = config_data[CONF_EVENTS].get(reason)
         if not event or not event.get("enabled", True):
             raise ServiceValidationError("event_not_found")
-        if not (event.get("message") or "").strip():
-            raise ServiceValidationError("message_missing")
-        template = Template(event["message"], hass)
-        message = template.async_render(context or {}, parse_result=False)
+        message = await async_render_message(hass, event, variables)
         selected = route_map(config_data, reason)
         profiles = config_data[CONF_DEVICES]
         selected_profiles = [
@@ -117,7 +119,9 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         return deliveries
 
     async def async_send(call: ServiceCall) -> None:
-        await async_send_event(call.data[ATTR_REASON], call.data.get(ATTR_CONTEXT, {}))
+        variables = dict(call.data.get(ATTR_CONTEXT, {}))
+        variables.update(call.data.get(ATTR_VARIABLES, {}))
+        await async_send_event(call.data[ATTR_REASON], variables)
 
     async def async_test_device(call: ServiceCall) -> None:
         entries = hass.config_entries.async_entries(DOMAIN)

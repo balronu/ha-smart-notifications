@@ -1,5 +1,21 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.10 – 2026-10-23
+
+### Deutsch
+- Einheitliches Nachrichtenmodell für statischen Text, Home-Assistant-Templates, Laufzeitparameter und kombinierte Nachrichten.
+- `smart_notifications.send` unterstützt `variables`; bestehende `context`-Aufrufe bleiben kompatibel.
+- Sichere zentrale Render-Pipeline, Pflicht-/optionale Parameter, Standardwerte, Vorschau und verständliche Validierungsfehler.
+- Lovelace-Ereigniseditor mit Nachrichtentyp, Template, Parameterdefinitionen, Geräteauswahl und deaktivierten Entwürfen.
+- Discovery erkennt verschachtelte Templates, Variablen, fehlende Ziele und verwendet keine Template-Variablen für Ereignis-IDs.
+
+### English
+- Unified message model for static text, Home Assistant templates, runtime parameters and combined messages.
+- `smart_notifications.send` supports `variables`; existing `context` calls remain compatible.
+- One safe rendering pipeline with required/optional parameters, defaults, preview and clear validation errors.
+- Lovelace event editor with message type, templates, parameter definitions, device assignment and disabled drafts.
+- Discovery detects nested templates, variables and missing targets, and never derives event IDs from template variables.
+
 ## 0.1.0-beta.7 – 2026-10-23
 
 ### Deutsch

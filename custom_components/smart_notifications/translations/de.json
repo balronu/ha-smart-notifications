@@ -13,6 +13,11 @@
   "options": {
     "error": {
       "event_not_found": "Das ausgewählte Ereignis ist nicht verfügbar.",
+      "template_invalid": "Das Template ist syntaktisch ungültig.",
+      "template_render_failed": "Die Nachricht konnte nicht gerendert werden.",
+      "rendered_message_empty": "Das gerenderte Ergebnis ist leer.",
+      "rendered_message_unavailable": "Das gerenderte Ergebnis ist nicht verfügbar.",
+      "missing_parameters": "Pflichtparameter fehlen.",
       "message_missing": "Für dieses Ereignis ist kein Nachrichtentext gespeichert.",
       "no_event_devices": "Für dieses Ereignis sind noch keine Ausgabegeräte konfiguriert.",
       "event_exists": "Diese Ereignis-ID ist bereits vorhanden.",
@@ -38,8 +43,8 @@
       "devices_edit_form": {"title": "Ausgabegerät bearbeiten", "data": {"device_id": "Konfiguriertes Ausgabegerät", "entity_id": "Bevorzugte Ausgabeentität", "alias": "Anzeigename (optional)", "physical_group": "Physische Gerätegruppe (optional)", "enabled": "Aktiviert"}, "data_description": {"device_id": "Das zu bearbeitende Gerät.", "entity_id": "Die Entität, die für dieses Profil verwendet wird.", "physical_group": "Alternative Entitäten desselben physischen Geräts können gruppiert werden."}},
       "devices_remove_form": {"title": "Ausgabegerät entfernen", "description": "Es wird nur die Smart-Notifications-Konfiguration geändert. Die Home-Assistant-Entität bleibt erhalten.", "data": {"device_id": "Ausgabegerät", "confirm": "Ausgabegerät wirklich entfernen"}},
       "events": {"title": "Ereignisse", "menu_options": {"events_add_form": "Ereignis hinzufügen", "events_edit_form": "Ereignis bearbeiten", "events_remove_form": "Ereignis entfernen", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"events_add_form": "Ein neues Ereignis mit stabiler ID anlegen.", "events_edit_form": "Text, Priorität oder Aktivierung ändern.", "events_remove_form": "Ein Ereignis nach Bestätigung entfernen.", "back": "Ohne ungespeicherte Änderungen zum Hauptmenü zurückkehren."}},
-      "events_add_form": {"title": "Ereignis hinzufügen", "data": {"reason": "Stabile Ereignis-ID", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "description": "Beschreibung", "enabled": "Aktiv", "priority": "Priorität", "dedup_seconds": "Duplikatschutz (Sekunden)"}},
-      "events_edit_form": {"title": "Ereignis bearbeiten", "data": {"reason": "Ereignis", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "description": "Beschreibung", "enabled": "Aktiv", "priority": "Priorität", "dedup_seconds": "Duplikatschutz (Sekunden)"}},
+      "events_add_form": {"title": "Ereignis hinzufügen", "data": {"reason": "Stabile Ereignis-ID", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "message_type": "Nachrichtentyp", "parameters": "Laufzeitparameter", "description": "Beschreibung", "enabled": "Aktiv", "priority": "Priorität", "dedup_seconds": "Duplikatschutz (Sekunden)"}},
+      "events_edit_form": {"title": "Ereignis bearbeiten", "data": {"reason": "Ereignis", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "message_type": "Nachrichtentyp", "parameters": "Laufzeitparameter", "description": "Beschreibung", "enabled": "Aktiv", "priority": "Priorität", "dedup_seconds": "Duplikatschutz (Sekunden)"}},
       "events_remove_form": {"title": "Ereignis entfernen", "description": "Nur die Smart-Notifications-Konfiguration wird geändert.", "data": {"reason": "Ereignis", "confirm": "Ereignis wirklich entfernen"}},
       "discover_notifications": {"title": "Benachrichtigungen erkennen", "menu_options": {"discover_scan_form": "Nach Benachrichtigungen suchen", "discover_candidates_form": "Erkannte Vorschläge anzeigen", "back": "Zurück zum Hauptmenü"}, "menu_option_descriptions": {"discover_scan_form": "Automationen und Skripte nur lesend analysieren.", "discover_candidates_form": "Vorschläge prüfen, übernehmen oder ignorieren.", "back": "Ohne Änderungen zum Hauptmenü zurückkehren."}},
       "discover_scan_form": {"title": "Benachrichtigungen erkennen", "description": "Die Analyse verändert keine Automationen oder Skripte.", "data": {"confirm": "Scan jetzt starten"}},
@@ -55,5 +60,5 @@
       "test_event_form": {"title": "Ereignis testen", "description": "Nur durch ausdrückliche Bestätigung werden die konfigurierten Ausgaben ausgeführt.", "data": {"reason": "Ereignis", "confirm": "Testausgabe wirklich senden"}}
     }
   },
-  "selector": {"priority": {"options": {"low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical": "Kritisch"}}}
+  "selector": {"priority": {"options": {"low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical": "Kritisch"}}, "message_type": {"options": {"static": "Statischer Text", "template": "Home-Assistant-Template", "parameters": "Laufzeitparameter", "combined": "Kombinierter Text"}}}
 }

@@ -28,6 +28,7 @@ from .const import (
     TEST_MESSAGE,
 )
 from .discovery import apply_candidate_action, async_scan
+from .message import MESSAGE_TYPES, normalize_parameters
 from .storage import discovered_devices, merged_config
 
 _LOGGER = logging.getLogger(__name__)
@@ -286,6 +287,12 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
         schema = {
             vol.Required("name", default=event.get("name", "")): str,
             vol.Required("message", default=event.get("message", "")): str,
+            vol.Required("message_type", default=event.get("message_type", "static")): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(MESSAGE_TYPES), translation_key="message_type"
+                )
+            ),
+            vol.Optional("parameters", default=event.get("parameters", {})): selector.ObjectSelector(),
             vol.Required("enabled", default=event.get("enabled", True)): bool,
             vol.Required("priority", default=event.get("priority", "normal")): selector.SelectSelector(
                 selector.SelectSelectorConfig(options=["low", "normal", "high", "critical"], translation_key="priority")
@@ -308,6 +315,8 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             if not key or key in data[CONF_EVENTS]:
                 return self.async_show_form(step_id="events_add_form", data_schema=self._event_schema(data), errors={"base": "event_exists"})
             data[CONF_EVENTS][key] = {field: user_input.get(field, "") for field in ("name", "message", "description")}
+            data[CONF_EVENTS][key]["message_type"] = user_input.get("message_type", "static")
+            data[CONF_EVENTS][key]["parameters"] = normalize_parameters(user_input.get("parameters", {}))
             data[CONF_EVENTS][key].update({"enabled": user_input["enabled"], "priority": user_input["priority"], "dedup_seconds": user_input.get("dedup_seconds", 0)})
             await self._save_options()
             return await self.async_step_events()
@@ -325,6 +334,8 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             if "name" not in user_input or "message" not in user_input:
                 return self.async_show_form(step_id="events_edit_form", data_schema=self._event_schema(data, edit=True, selected_reason=key))
             event.update({field: user_input.get(field, "") for field in ("name", "message", "description")})
+            event["message_type"] = user_input.get("message_type", event.get("message_type", "static"))
+            event["parameters"] = normalize_parameters(user_input.get("parameters", event.get("parameters", {})))
             event.update({"enabled": user_input["enabled"], "priority": user_input["priority"], "dedup_seconds": user_input.get("dedup_seconds", 0)})
             await self._save_options()
             return await self.async_step_events()

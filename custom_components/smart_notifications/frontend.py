@@ -10,12 +10,14 @@ from homeassistant.components import frontend as ha_frontend
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.server import StaticPathConfig
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 
 from .const import DOMAIN, SERVICE_TEST_DEVICE, SERVICE_TEST_EVENT
 from .discovery import apply_candidate_action, async_scan
+from .message import async_render_message, normalize_event, validate_message
 from .storage import merged_config
 
-CARD_RESOURCE_URL = "/smart_notifications/smart-notifications-card.js?v=0.1.0-beta.9"
+CARD_RESOURCE_URL = "/smart_notifications/smart-notifications-card.js?v=0.1.0-beta.10"
 
 
 class SmartNotificationsStatusView(HomeAssistantView):
@@ -30,7 +32,7 @@ class SmartNotificationsStatusView(HomeAssistantView):
         entry = next(iter(hass.config_entries.async_entries(DOMAIN)), None)
         config = merged_config(entry.options if entry else {})
         devices = [{"id": key, "name": value.get("name", key), "entity_id": value.get("entity_id"), "channel": value.get("channel"), "available": hass.states.get(value.get("entity_id", "")).state not in (None, "unavailable", "unknown")} for key, value in config["devices"].items()]
-        return self.json({"configured": entry is not None, "devices": devices, "events": [{"id": key, "name": value["name"], "message": value["message"], "devices": config["routes"].get(key, [])} for key, value in config["events"].items() if value.get("enabled", True)], "history": list(hass.data.get(DOMAIN, {}).get("history", []))[:20]})
+        return self.json({"configured": entry is not None, "devices": devices, "events": [{"id": key, **normalize_event(value), "devices": config["routes"].get(key, [])} for key, value in config["events"].items()], "history": list(hass.data.get(DOMAIN, {}).get("history", []))[:20]})
 
 
 class SmartNotificationsTestView(HomeAssistantView):
@@ -72,6 +74,14 @@ class SmartNotificationsDiscoveryView(HomeAssistantView):
         entry = self._entry(hass)
         config = merged_config(entry.options if entry else {})
         candidates = list(config.get("discovery", {}).get("candidates", {}).values())
+        device_by_entity = {value.get("entity_id"): key for key, value in config["devices"].items()}
+        for candidate in candidates:
+            entities = set(candidate.get("entity_ids", []))
+            target = candidate.get("output_target")
+            if target:
+                entities.add(f"notify.mobile_app_{target}")
+            candidate["device_matches"] = sorted(device_by_entity[entity] for entity in entities if entity in device_by_entity)
+            candidate["missing_devices"] = sorted(entity for entity in entities if entity not in device_by_entity)
         return self.json({
             "configured": entry is not None,
             "source_scope": "automations.yaml und scripts.yaml; Storage-Automationen werden nicht über private APIs gelesen.",
@@ -95,10 +105,43 @@ class SmartNotificationsDiscoveryView(HomeAssistantView):
             candidate = apply_candidate_action(config, str(payload.get("candidate_id", "")), action, payload.get("edits"))
             if candidate is None:
                 return self.json({"error": "candidate_not_found"}, status_code=404)
+        elif action == "event_save":
+            reason = str(payload.get("reason", "")).strip().lower()
+            if not reason or not reason.replace("_", "").isalnum():
+                return self.json({"error": "event_id_invalid"}, status_code=400)
+            event = normalize_event(payload)
+            try:
+                validate_message(hass, event, payload.get("variables", {}))
+            except ServiceValidationError as err:
+                return self.json({"error": str(err)}, status_code=400)
+            config["events"][reason] = {
+                key: event.get(key)
+                for key in ("name", "message", "message_type", "parameters", "enabled", "priority", "description", "dedup_seconds")
+                if key in event
+            }
+            if "devices" in payload:
+                config["routes"][reason] = list(payload.get("devices") or [])
         else:
             return self.json({"error": "unsupported_action"}, status_code=400)
         hass.config_entries.async_update_entry(entry, options=config)
         return self.json({"ok": True, "candidates": list(config["discovery"]["candidates"].values()), "events": config["events"]})
+
+
+class SmartNotificationsPreviewView(HomeAssistantView):
+    """Render a candidate message without sending to any output."""
+
+    url = "/api/smart_notifications/preview"
+    name = "api:smart_notifications:preview"
+    requires_auth = True
+
+    async def post(self, request: web.Request) -> web.Response:
+        hass: HomeAssistant = request.app["hass"]
+        payload: dict[str, Any] = await request.json()
+        try:
+            rendered = await async_render_message(hass, payload, payload.get("variables", {}))
+        except ServiceValidationError as err:
+            return self.json({"ok": False, "error": str(err)}, status_code=400)
+        return self.json({"ok": True, "message": rendered})
 
 
 async def async_setup_frontend(hass: HomeAssistant) -> None:
@@ -119,4 +162,5 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
     hass.http.register_view(SmartNotificationsStatusView)
     hass.http.register_view(SmartNotificationsTestView)
     hass.http.register_view(SmartNotificationsDiscoveryView)
+    hass.http.register_view(SmartNotificationsPreviewView)
     runtime["frontend_registered"] = True

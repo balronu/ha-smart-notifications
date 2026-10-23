@@ -58,6 +58,27 @@ async def test_action_uses_shared_message_and_suppresses_physical_duplicate(hass
 
 
 @pytest.mark.asyncio
+async def test_send_accepts_runtime_variables_and_renders_same_message_for_push(hass: HomeAssistant):
+    notify_call = AsyncMock()
+    hass.services.async_register("notify", "send_message", notify_call)
+    hass.states.async_set("notify.phone", "idle")
+    await async_setup(hass, {})
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={},
+        options={
+            "events": {"device_warning": {"name": "Gerätewarnung", "message": "{{ geraet }}: {{ meldung }}", "message_type": "parameters", "parameters": {"geraet": {"type": "text", "required": True}, "meldung": {"type": "text", "required": True}}, "enabled": True}},
+            "devices": {"phone": {"entity_id": "notify.phone", "channel": "notify", "enabled": True}},
+            "routes": {"device_warning": ["phone"]},
+        },
+    )
+    entry.add_to_hass(hass)
+    await async_setup_entry(hass, entry)
+    await hass.services.async_call(DOMAIN, "send", {"reason": "device_warning", "variables": {"geraet": "Waschmaschine", "meldung": "Fertig"}}, blocking=True)
+    assert notify_call.await_args.args[0].data["message"] == "Waschmaschine: Fertig"
+
+
+@pytest.mark.asyncio
 async def test_explicit_device_test_requires_confirmation_and_supports_push(hass: HomeAssistant):
     notify_call = AsyncMock()
     hass.services.async_register("notify", "send_message", notify_call)

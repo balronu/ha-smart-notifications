@@ -11,6 +11,11 @@ send:
       name: Kontext
       required: false
       selector: {object: {}}
+    variables:
+      name: Laufzeitparameter
+      description: Werte für benannte Template-Parameter.
+      required: false
+      selector: {object: {}}
     event_key:
       name: Eindeutiger Ereignisschlüssel
       required: false

@@ -46,6 +46,14 @@ def test_discovery_marks_templates_and_technical_fallback_name():
     assert candidates[0]["source_name_quality"] == "technical_fallback"
     assert candidates[0]["message_is_template"] is True
     assert candidates[0]["templates"]
+    assert candidates[0]["template_variables"] == []
+
+
+def test_discovery_reports_unresolved_script_variables_without_inventing_values():
+    candidates = scan_documents({"script": {"alarm": {"sequence": [{"action": "notify.send_message", "data": {"message": "{{ msg_text }}"}}]}}})
+    assert candidates[0]["message_type"] == "template"
+    assert candidates[0]["template_variables"] == ["msg_text"]
+    assert candidates[0]["suggested_reason"] == "alarm"
 
 
 def test_automation_trigger_and_conditions_are_carried_into_group_identity():
