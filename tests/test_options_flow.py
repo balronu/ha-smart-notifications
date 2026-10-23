@@ -17,3 +17,17 @@ async def test_options_flow_persists_shared_event_and_route_data(hass: HomeAssis
     )
     assert result["type"] == "create_entry"
     assert result["data"]["events"]["washer_finished"]["message"] == "Fertig"
+
+
+@pytest.mark.asyncio
+async def test_options_menu_exposes_translated_supported_steps(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+    result = await flow.async_step_init()
+    assert result["type"] == "menu"
+    assert set(result["menu_options"]) == {
+        "settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"
+    }

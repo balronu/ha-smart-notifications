@@ -7,6 +7,7 @@ from typing import Any
 
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.http.server import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, SERVICE_TEST_DEVICE, SERVICE_TEST_EVENT
@@ -51,7 +52,13 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
     """Register the static card and API once during domain setup."""
     if hass.http is None:
         return
+    runtime = hass.data.setdefault(DOMAIN, {})
+    if runtime.get("frontend_registered"):
+        return
     card_path = Path(__file__).parent / "frontend" / "smart-notifications-card.js"
-    hass.http.register_static_path("/smart_notifications/smart-notifications-card.js", str(card_path), cache_headers=False)
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig("/smart_notifications/smart-notifications-card.js", str(card_path), cache_headers=False)]
+    )
     hass.http.register_view(SmartNotificationsStatusView)
     hass.http.register_view(SmartNotificationsTestView)
+    runtime["frontend_registered"] = True

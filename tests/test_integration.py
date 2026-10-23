@@ -4,7 +4,7 @@ import pytest
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-from smart_notifications import async_setup, async_setup_entry
+from smart_notifications import async_setup, async_setup_entry, async_unload_entry
 from smart_notifications.config_flow import SmartNotificationsConfigFlow
 from smart_notifications.const import DOMAIN
 
@@ -62,3 +62,14 @@ async def test_explicit_device_test_requires_confirmation_and_supports_push(hass
     await hass.services.async_call(DOMAIN, "test_device", {"device_id": "phone", "message": "Probe", "confirm": True}, blocking=True)
     assert notify_call.await_count == 1
     assert notify_call.await_args.args[0].data["message"] == "Probe"
+
+
+@pytest.mark.asyncio
+async def test_config_entry_setup_and_unload(hass: HomeAssistant):
+    await async_setup(hass, {})
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    assert await async_setup_entry(hass, entry)
+    assert entry.entry_id in hass.data[DOMAIN]["entries"]
+    assert await async_unload_entry(hass, entry)
+    assert entry.entry_id not in hass.data[DOMAIN]["entries"]

@@ -1,4 +1,29 @@
 {
-  "config": {"step": {"user": {"title": "Smart Notifications", "description": "Zentrale Ausgaben konfigurieren. {device_count} kompatible Entitäten wurden gefunden."}}, "abort": {"already_configured": "Smart Notifications ist bereits eingerichtet."}},
-  "options": {"step": {"init": {"title": "Smart Notifications", "menu": {"settings": "Grundeinstellungen", "devices": "Ausgabegeräte verwalten", "events": "Ereigniskatalog und Texte", "event_devices": "Ereignis → Geräte", "device_events": "Gerät → Ereignisse", "test_device": "Einzelgerät testen", "test_event": "Ereignis testen"}}, "settings": {"title": "Grundeinstellungen", "data": {"tts_entity": "TTS-Engine", "title": "Benachrichtigungstitel", "dedup_seconds": "Duplikatfenster (Sekunden)"}}, "devices": {"title": "Ausgabegerät hinzufügen", "data": {"entity_id": "Entität"}}, "events": {"title": "Ereignis bearbeiten", "data": {"reason": "Ereignis", "name": "Name", "message": "Gemeinsamer Nachrichtentext", "enabled": "Aktiv", "priority": "Priorität"}}, "event_devices": {"title": "Ereignis → Geräte", "data": {"reason": "Ereignis", "devices": "Ausgabegeräte"}}, "device_events": {"title": "Gerät → Ereignisse", "data": {"device": "Gerät", "events": "Ereignisse"}}, "test_device": {"title": "Einzelgerät testen", "description": "Nur durch Bestätigung wird eine Testausgabe gesendet.", "data": {"device": "Gerät", "message": "Testnachricht", "confirm": "Testausgabe wirklich senden"}}, "test_event": {"title": "Ereignis testen", "description": "Nur durch Bestätigung werden die konfigurierten Ausgaben ausgeführt.", "data": {"reason": "Ereignis", "confirm": "Testausgabe wirklich senden"}}}}
+  "config": {
+    "step": {
+      "user": {
+        "title": "Smart Notifications",
+        "description": "Zentrale Ausgaben konfigurieren. Gefunden: {media_player_count} TTS-Ausgabegeräte, {notify_count} Push-Dienste und {tts_count} TTS-Engines.",
+        "data": {"tts_entity": "TTS-Engine", "title": "Standardtitel", "dedup_seconds": "Duplikatschutz (Sekunden)"},
+        "data_description": {"tts_entity": "Die TTS-Engine, die Audio für ausgewählte Media Player erzeugt.", "title": "Titel für schriftliche Benachrichtigungen.", "dedup_seconds": "Zeitfenster, in dem gleiche Ausgaben unterdrückt werden."}
+      }
+    },
+    "abort": {"already_configured": "Smart Notifications ist bereits eingerichtet."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Smart Notifications",
+        "menu_options": {"settings": "Ausgabeoptionen", "devices": "Geräte verwalten", "events": "Ereignisse und Texte verwalten", "event_devices": "Ereignisse → Geräte zuordnen", "device_events": "Geräte → Ereignisse zuordnen", "test_device": "Einzelgerät testen", "test_event": "Ereignis testen"},
+        "menu_option_descriptions": {"settings": "TTS-Engine, Standardtitel und Duplikatschutz.", "devices": "TTS-Ausgabegeräte und Push-Dienste auswählen.", "events": "Ereignisse, Standardtexte und Prioritäten bearbeiten.", "event_devices": "Ausgaben für ein Ereignis festlegen.", "device_events": "Ereignisse für ein Gerät festlegen.", "test_device": "Eine einzelne Ausgabe nach Bestätigung testen.", "test_event": "Ein vollständiges Ereignis nach Bestätigung testen."}
+      },
+      "settings": {"title": "Ausgabeoptionen", "data": {"tts_entity": "TTS-Engine", "title": "Standardtitel", "dedup_seconds": "Duplikatschutz (Sekunden)"}, "data_description": {"tts_entity": "Die TTS-Engine, die Audio für Media Player erzeugt.", "title": "Titel für schriftliche Benachrichtigungen.", "dedup_seconds": "Zeitfenster, in dem gleiche Ausgaben unterdrückt werden."}},
+      "devices": {"title": "Geräte verwalten", "description": "Media Player werden als TTS-Ausgabegeräte erkannt. Notify-Entitäten werden als Push-Dienste erkannt. Eine manuelle physische Gruppe verbindet nur ausdrücklich bestätigte Entitäten.", "data": {"entity_id": "Ausgabegerät oder Push-Dienst", "physical_group": "Manuelle physische Gruppe (optional)"}, "data_description": {"entity_id": "Piper und andere TTS-Engines werden separat ausgewählt und sind keine Lautsprecher.", "physical_group": "Derselbe Gruppenname kann alternative Entitäten desselben physischen Geräts zusammenfassen."}},
+      "events": {"title": "Ereignisse und Texte verwalten", "data": {"reason": "Ereignis", "name": "Anzeigename", "message": "Gemeinsamer Nachrichtentext", "enabled": "Aktiv", "priority": "Priorität"}},
+      "event_devices": {"title": "Ereignisse → Geräte zuordnen", "data": {"reason": "Ereignis", "devices": "Ausgabegeräte"}},
+      "device_events": {"title": "Geräte → Ereignisse zuordnen", "data": {"device": "Gerät", "events": "Ereignisse"}},
+      "test_device": {"title": "Einzelgerät testen", "description": "Nur durch ausdrückliche Bestätigung wird eine Testausgabe gesendet.", "data": {"device_id": "Gerät", "message": "Testnachricht", "confirm": "Testausgabe wirklich senden"}},
+      "test_event": {"title": "Ereignis testen", "description": "Nur durch ausdrückliche Bestätigung werden die konfigurierten Ausgaben ausgeführt.", "data": {"reason": "Ereignis", "confirm": "Testausgabe wirklich senden"}}
+    }
+  }
 }
