@@ -15,8 +15,11 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.template import Template
 
 from .const import (
+    ATTR_CONFIRM,
     ATTR_CONTEXT,
+    ATTR_DEVICE_ID,
     ATTR_EVENT_KEY,
+    ATTR_MESSAGE,
     ATTR_REASON,
     CONF_DEVICES,
     CONF_EVENTS,
@@ -24,7 +27,11 @@ from .const import (
     CONF_TTS_ENTITY,
     DOMAIN,
     SERVICE_SEND,
+    SERVICE_TEST_DEVICE,
+    SERVICE_TEST_EVENT,
+    TEST_MESSAGE,
 )
+from .frontend import async_setup_frontend
 from .storage import merged_config, route_map
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,6 +42,21 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Optional(ATTR_EVENT_KEY): cv.string,
     }
 )
+TEST_DEVICE_SCHEMA = vol.Schema({vol.Required(ATTR_DEVICE_ID): cv.string, vol.Optional(ATTR_MESSAGE, default=TEST_MESSAGE): cv.string, vol.Required(ATTR_CONFIRM, default=False): cv.boolean})
+TEST_EVENT_SCHEMA = vol.Schema({vol.Required(ATTR_REASON): cv.string, vol.Optional(ATTR_CONFIRM, default=False): cv.boolean})
+
+
+async def async_deliver_profile(hass: HomeAssistant, config_data: dict[str, Any], profile: dict[str, Any], message: str, *, test: bool = False) -> None:
+    """Deliver one message using only native Home Assistant actions."""
+    if profile["channel"] == "tts":
+        tts_entity = config_data.get(CONF_TTS_ENTITY)
+        if not tts_entity:
+            raise ServiceValidationError("Keine TTS-Engine konfiguriert")
+        await hass.services.async_call("tts", "speak", {"media_player_entity_id": profile["entity_id"], "message": message}, target={"entity_id": tts_entity}, blocking=True)
+    elif profile["channel"] == "notify":
+        await hass.services.async_call("notify", "send_message", {"message": message, "title": "Smart Notifications Test" if test else config_data.get(CONF_TITLE)}, target={"entity_id": profile["entity_id"]}, blocking=True)
+    else:
+        raise ServiceValidationError(f"Nicht unterstützter Kanal: {profile['channel']}")
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
@@ -68,30 +90,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
                 continue
             seen_physical.add(identity)
             try:
-                if profile["channel"] == "tts":
-                    tts_entity = config_data.get(CONF_TTS_ENTITY)
-                    if not tts_entity:
-                        raise ServiceValidationError("Keine TTS-Engine konfiguriert")
-                    await hass.services.async_call(
-                        "tts",
-                        "speak",
-                        {
-                            "media_player_entity_id": profile["entity_id"],
-                            "message": message,
-                        },
-                        target={"entity_id": tts_entity},
-                        blocking=True,
-                    )
-                elif profile["channel"] == "notify":
-                    await hass.services.async_call(
-                        "notify",
-                        "send_message",
-                        {"message": message, "title": config_data.get(CONF_TITLE)},
-                        target={"entity_id": profile["entity_id"]},
-                        blocking=True,
-                    )
-                else:
-                    raise ServiceValidationError(f"Nicht unterstützter Kanal: {profile['channel']}")
+                await async_deliver_profile(hass, config_data, profile, message)
                 deliveries.append({"profile": profile_id, "status": "sent"})
             except HomeAssistantError as err:  # one unavailable target must not hide others
                 _LOGGER.warning("Output failed for %s: %s", profile_id, err)
@@ -100,7 +99,27 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             {"timestamp": datetime.now().isoformat(), "reason": reason, "message": message, "deliveries": deliveries}
         )
 
+    async def async_test_device(call: ServiceCall) -> None:
+        entries = hass.config_entries.async_entries(DOMAIN)
+        if not entries or not call.data.get(ATTR_CONFIRM):
+            return
+        config_data = merged_config(entries[0].options)
+        profile = config_data[CONF_DEVICES].get(call.data[ATTR_DEVICE_ID])
+        if not profile:
+            raise ServiceValidationError("Ausgabegerät nicht gefunden")
+        await async_deliver_profile(hass, config_data, profile, call.data.get(ATTR_MESSAGE, TEST_MESSAGE), test=True)
+        hass.data[DOMAIN]["history"].appendleft({"timestamp": datetime.now().isoformat(), "reason": "test_device", "message": call.data.get(ATTR_MESSAGE, TEST_MESSAGE), "deliveries": [{"profile": call.data[ATTR_DEVICE_ID], "status": "sent"}]})
+
+    async def async_test_event(call: ServiceCall) -> None:
+        entries = hass.config_entries.async_entries(DOMAIN)
+        if not entries or not call.data.get(ATTR_CONFIRM):
+            return
+        await async_send(ServiceCall(DOMAIN, SERVICE_SEND, {ATTR_REASON: call.data[ATTR_REASON], ATTR_CONTEXT: {}}))
+
     hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=CONFIG_SCHEMA)
+    hass.services.async_register(DOMAIN, SERVICE_TEST_DEVICE, async_test_device, schema=TEST_DEVICE_SCHEMA)
+    hass.services.async_register(DOMAIN, SERVICE_TEST_EVENT, async_test_event, schema=TEST_EVENT_SCHEMA)
+    await async_setup_frontend(hass)
     return True
 
 

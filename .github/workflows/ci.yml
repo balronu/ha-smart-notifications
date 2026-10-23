@@ -17,6 +17,7 @@ jobs:
       - run: pytest -q
       - run: ruff check .
       - run: python -m compileall -q custom_components
+      - run: node --check custom_components/smart_notifications/frontend/smart-notifications-card.js
       - run: |
           python - <<'PY'
           import json
@@ -25,4 +26,5 @@ jobs:
               json.loads(path.read_text())
           print('JSON valid')
           PY
+      - run: python tools/build_release_zip.py
       - uses: hacs/action@main

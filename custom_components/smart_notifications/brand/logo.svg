@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 256" role="img" aria-label="Smart Notifications">
-  <rect width="900" height="256" rx="52" fill="#173f66"/>
-  <g transform="translate(20 20)"><rect width="216" height="216" rx="42" fill="#204f7d"/><path d="M64 159c0-33 9-52 21-64 8-8 15-11 23-14V70a12 12 0 0 1 24 0v11c8 3 15 6 23 14 12 12 21 31 21 64l11 12H53z" fill="#fff"/><path d="M93 182h30" stroke="#ffae22" stroke-width="9" stroke-linecap="round"/><circle cx="108" cy="68" r="8" fill="#ffae22"/><path d="M48 101c-9 10-13 21-13 32s4 22 13 32M168 101c9 10 13 21 13 32s-4 22-13 32" fill="none" stroke="#ffae22" stroke-width="8" stroke-linecap="round"/></g>
-  <text x="285" y="150" font-family="DejaVu Sans,Arial,sans-serif" font-size="68" font-weight="600" fill="#fff">Smart Notifications</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="Smart Notifications">
+  <rect width="1200" height="300" rx="24" fill="#fff"/>
+  <g transform="translate(28 18)"><rect width="264" height="264" rx="42" fill="#0d70cd"/><path d="M91 172c0-39 11-61 28-73V83a28 28 0 0 1 56 0v16c17 12 28 34 28 73l12 14H79z" fill="#5db7ef" stroke="#e8fbff" stroke-width="5"/><path d="M72 98c-13 14-19 29-19 45s6 31 19 45M222 98c13 14 19 29 19 45s-6 31-19 45" fill="none" stroke="#1bd0ee" stroke-width="9" stroke-linecap="round"/><circle cx="147" cy="190" r="9" fill="#ffa622"/></g>
+  <text x="330" y="135" font-family="Arial,sans-serif" font-size="72" font-weight="700" fill="#071f49">Smart</text><text x="330" y="210" font-family="Arial,sans-serif" font-size="72" font-weight="700" fill="#1868d2">Notifications</text><text x="333" y="251" font-family="Arial,sans-serif" font-size="24" fill="#5c687b">FÜR HOME ASSISTANT</text>
 </svg>

@@ -47,3 +47,18 @@ async def test_action_uses_shared_message_and_suppresses_physical_duplicate(hass
     assert tts_call.await_count == 1
     assert notify_call.await_count == 0
     assert tts_call.await_args.args[0].data["message"] == "Fertig Küche"
+
+
+@pytest.mark.asyncio
+async def test_explicit_device_test_requires_confirmation_and_supports_push(hass: HomeAssistant):
+    notify_call = AsyncMock()
+    hass.services.async_register("notify", "send_message", notify_call)
+    await async_setup(hass, {})
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"devices": {"phone": {"entity_id": "notify.phone", "channel": "notify", "enabled": True}}, "events": {}, "routes": {}})
+    entry.add_to_hass(hass)
+    await async_setup_entry(hass, entry)
+    await hass.services.async_call(DOMAIN, "test_device", {"device_id": "phone", "confirm": False}, blocking=True)
+    assert notify_call.await_count == 0
+    await hass.services.async_call(DOMAIN, "test_device", {"device_id": "phone", "message": "Probe", "confirm": True}, blocking=True)
+    assert notify_call.await_count == 1
+    assert notify_call.await_args.args[0].data["message"] == "Probe"
