@@ -1,4 +1,22 @@
 # Änderungsprotokoll / Changelog
+
+## 0.1.0-beta.7 – 2026-10-23
+
+### Deutsch
+- Ereignisse können grafisch hinzugefügt, bearbeitet, deaktiviert und bestätigt entfernt werden.
+- Technische Ereignis-IDs bleiben bei Namensänderungen stabil; Routen werden beim Entfernen bereinigt.
+- Manueller, rein lesender Scanner für TTS-, Notify-, Script-, Smart-Notifications- und erkennbare Media-Player-Aktionen ergänzt.
+- Verschachtelte `choose`, `if`, `repeat`, `parallel` und Skriptsequenzen werden berücksichtigt.
+- Erkannte Kandidaten werden mit stabiler Signatur, Status, Erkennungsqualität und Übernahme-/Ignorieren-Aktion gespeichert.
+- Übernahmen erstellen nur eine deaktivierte Smart-Notifications-Konfiguration und verändern keine Automationen oder Skripte.
+
+### English
+- Events can be added, edited, disabled and removed with confirmation through the graphical Options Flow.
+- Technical event IDs remain stable when display names change; routes are cleaned up on removal.
+- Added a manual, read-only scanner for TTS, Notify, Script, Smart Notifications and recognizable media-player actions.
+- Nested `choose`, `if`, `repeat`, `parallel` and script sequences are traversed.
+- Discovered candidates are stored with stable signatures, status, confidence and adopt/ignore actions.
+- Adoption only creates a disabled Smart Notifications configuration and never changes automations or scripts.
 ## 0.1.0-beta.6 – 2026-10-23
 
 ### Deutsch

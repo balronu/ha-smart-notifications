@@ -19,6 +19,7 @@ from .const import (
     ATTR_REASON,
     CONF_DEDUP_SECONDS,
     CONF_DEVICES,
+    CONF_DISCOVERY,
     CONF_EVENTS,
     CONF_ROUTES,
     CONF_TITLE,
@@ -26,6 +27,7 @@ from .const import (
     DOMAIN,
     TEST_MESSAGE,
 )
+from .discovery import async_scan
 from .storage import discovered_devices, merged_config
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,6 +110,7 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
                 "settings",
                 "devices",
                 "events",
+                "discover_notifications",
                 "event_devices",
                 "device_events",
                 "test_device",
@@ -273,40 +276,102 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_events(self, user_input=None):
-        return self.async_show_menu(step_id="events", menu_options=["events_form", "back"])
+        return self.async_show_menu(
+            step_id="events",
+            menu_options=["events_add_form", "events_edit_form", "events_remove_form", "back"],
+        )
 
-    async def async_step_events_form(self, user_input=None):
+    def _event_schema(self, data, *, edit=False):
+        schema = {
+            vol.Required("name"): str,
+            vol.Required("message"): str,
+            vol.Required("enabled", default=True): bool,
+            vol.Required("priority", default="normal"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=["low", "normal", "high", "critical"], translation_key="priority")
+            ),
+            vol.Optional("description", default=""): str,
+            vol.Optional("dedup_seconds", default=0): vol.Coerce(int),
+        }
+        if edit:
+            schema = {vol.Required("reason"): selector.SelectSelector(selector.SelectSelectorConfig(options=self._event_options(data))), **schema}
+        else:
+            schema = {vol.Required("reason"): str, **schema}
+        return vol.Schema(schema)
+
+    async def async_step_events_add_form(self, user_input=None):
         data = self._ensure_data()
-        event_keys = sorted(data[CONF_EVENTS])
         if user_input is not None:
-            key = user_input["reason"]
-            data[CONF_EVENTS][key].update({"name": user_input["name"], "message": user_input["message"], "enabled": user_input["enabled"], "priority": user_input["priority"]})
+            key = user_input["reason"].strip().lower()
+            if not key or key in data[CONF_EVENTS]:
+                return self.async_show_form(step_id="events_add_form", data_schema=self._event_schema(data), errors={"base": "event_exists"})
+            data[CONF_EVENTS][key] = {field: user_input.get(field, "") for field in ("name", "message", "description")}
+            data[CONF_EVENTS][key].update({"enabled": user_input["enabled"], "priority": user_input["priority"], "dedup_seconds": user_input.get("dedup_seconds", 0)})
             await self._save_options()
             return await self.async_step_events()
         return self.async_show_form(
-            step_id="events_form",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("reason"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=[
-                                {"value": key, "label": data[CONF_EVENTS][key]["name"]}
-                                for key in event_keys
-                            ]
-                        )
-                    ),
-                    vol.Required("name"): str,
-                    vol.Required("message"): str,
-                    vol.Required("enabled", default=True): bool,
-                    vol.Required("priority", default="normal"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=["low", "normal", "high", "critical"],
-                            translation_key="priority",
-                        )
-                    ),
-                }
-            ),
+            step_id="events_add_form", data_schema=self._event_schema(data)
         )
+
+    async def async_step_events_edit_form(self, user_input=None):
+        data = self._ensure_data()
+        if user_input is not None:
+            key = user_input["reason"]
+            event = data[CONF_EVENTS].get(key)
+            if not event:
+                return self.async_abort(reason="event_not_found")
+            event.update({field: user_input.get(field, "") for field in ("name", "message", "description")})
+            event.update({"enabled": user_input["enabled"], "priority": user_input["priority"], "dedup_seconds": user_input.get("dedup_seconds", 0)})
+            await self._save_options()
+            return await self.async_step_events()
+        if not data[CONF_EVENTS]:
+            return self.async_abort(reason="no_events")
+        return self.async_show_form(step_id="events_edit_form", data_schema=self._event_schema(data, edit=True))
+
+    async def async_step_events_form(self, user_input=None):
+        """Compatibility alias for Beta.6 callers."""
+        return await self.async_step_events_edit_form(user_input)
+
+    async def async_step_events_remove_form(self, user_input=None):
+        data = self._ensure_data()
+        if not data[CONF_EVENTS]:
+            return self.async_abort(reason="no_events")
+        if user_input is not None:
+            key = user_input["reason"]
+            if user_input.get("confirm"):
+                data[CONF_EVENTS].pop(key, None)
+                data[CONF_ROUTES].pop(key, None)
+                await self._save_options()
+            return await self.async_step_events()
+        return self.async_show_form(step_id="events_remove_form", data_schema=vol.Schema({vol.Required("reason"): selector.SelectSelector(selector.SelectSelectorConfig(options=self._event_options(data))), vol.Required("confirm", default=False): bool}))
+
+    async def async_step_discover_notifications(self, user_input=None):
+        return self.async_show_menu(step_id="discover_notifications", menu_options=["discover_scan_form", "discover_candidates_form", "back"])
+
+    async def async_step_discover_scan_form(self, user_input=None):
+        data = self._ensure_data()
+        if user_input and user_input.get("confirm"):
+            candidates = await async_scan(self.hass, data.get(CONF_DISCOVERY))
+            data[CONF_DISCOVERY] = {"candidates": {item["candidate_id"]: item for item in candidates}}
+            await self._save_options()
+            return await self.async_step_discover_notifications()
+        return self.async_show_form(step_id="discover_scan_form", data_schema=vol.Schema({vol.Required("confirm", default=False): bool}))
+
+    async def async_step_discover_candidates_form(self, user_input=None):
+        data = self._ensure_data()
+        candidates = data.get(CONF_DISCOVERY, {}).get("candidates", {})
+        if user_input:
+            candidate = candidates.get(user_input["candidate_id"])
+            if candidate and user_input["action"] == "ignore":
+                candidate["status"] = "ignored"
+            elif candidate and user_input["action"] == "adopt":
+                reason = candidate["suggested_reason"]
+                data[CONF_EVENTS].setdefault(reason, {"name": reason.replace("_", " ").title(), "message": candidate.get("message", ""), "enabled": False, "priority": "normal", "description": "Übernommener Vorschlag"})
+                candidate["status"] = "adopted"
+            await self._save_options()
+            return await self.async_step_discover_notifications()
+        if not candidates:
+            return self.async_abort(reason="no_candidates")
+        return self.async_show_form(step_id="discover_candidates_form", data_schema=vol.Schema({vol.Required("candidate_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": key, "label": f"{item['source_type']}: {item['source_id']} – {item['service']} ({item['status']})"} for key, item in candidates.items()])), vol.Required("action", default="review"): selector.SelectSelector(selector.SelectSelectorConfig(options=["review", "adopt", "ignore"]))}))
 
     async def async_step_event_devices(self, user_input=None):
         return self.async_show_menu(

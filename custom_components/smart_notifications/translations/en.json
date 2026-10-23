@@ -15,6 +15,7 @@
       "event_not_found": "The selected event is not available.",
       "message_missing": "No message text is saved for this event.",
       "no_event_devices": "No output devices are configured for this event yet.",
+      "event_exists": "This event ID already exists.",
       "device_unavailable": "At least one output device is unavailable.",
       "tts_unavailable": "The configured TTS engine is unavailable.",
       "notify_unavailable": "The configured notification target is unavailable.",
@@ -23,12 +24,12 @@
       "test_failed": "The test could not be completed because of an unexpected output or connection error.",
       "duplicate_entity": "This output device is already configured."
     },
-    "abort": {"no_devices": "Please add an output device first.", "no_discovered_devices": "No compatible output devices were found."},
+    "abort": {"no_devices": "Please add an output device first.", "no_discovered_devices": "No compatible output devices were found.", "no_events": "Please add an event first.", "no_candidates": "No notifications have been discovered yet."},
     "step": {
       "init": {
         "title": "Smart Notifications",
-        "menu_options": {"settings": "Basic settings", "devices": "Output devices", "events": "Events", "event_devices": "Event → devices", "device_events": "Device → events", "test_device": "Test one device", "test_event": "Test an event"},
-        "menu_option_descriptions": {"settings": "Edit the TTS engine, default title and duplicate protection.", "devices": "Manage voice and push output devices.", "events": "Edit events and shared message texts.", "event_devices": "Assign output devices to an event.", "device_events": "Assign events to an output device.", "test_device": "Test one output after confirmation.", "test_event": "Test a complete event after confirmation."}
+        "menu_options": {"settings": "Basic settings", "devices": "Output devices", "events": "Events", "discover_notifications": "Discover notifications", "event_devices": "Event → devices", "device_events": "Device → events", "test_device": "Test one device", "test_event": "Test an event"},
+        "menu_option_descriptions": {"settings": "Edit the TTS engine, default title and duplicate protection.", "devices": "Manage voice and push output devices.", "events": "Edit events and shared message texts.", "discover_notifications": "Read-only analysis of automation and script outputs.", "event_devices": "Assign output devices to an event.", "device_events": "Assign events to an output device.", "test_device": "Test one output after confirmation.", "test_event": "Test a complete event after confirmation."}
       },
       "settings": {"title": "Basic settings", "menu_options": {"settings_form": "Edit basic settings", "back": "Back to main menu"}, "menu_option_descriptions": {"settings_form": "Edit the TTS engine, default title and duplicate protection.", "back": "Return without applying unsaved changes."}},
       "settings_form": {"title": "Basic settings", "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"}, "data_description": {"tts_entity": "The TTS engine used to create audio for media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}},
@@ -36,7 +37,13 @@
       "devices_add_form": {"title": "Add output device", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "alias": "Display name (optional)", "physical_group": "Physical device group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "alias": "A custom name is shown in selection fields.", "physical_group": "The same group name can join alternate entities of one physical device."}},
       "devices_edit_form": {"title": "Edit output device", "data": {"device_id": "Configured output device", "entity_id": "Preferred output entity", "alias": "Display name (optional)", "physical_group": "Physical device group (optional)", "enabled": "Enabled"}, "data_description": {"device_id": "The device to edit.", "entity_id": "The entity used for this profile.", "physical_group": "Alternate entities of the same physical device can be grouped."}},
       "devices_remove_form": {"title": "Remove output device", "description": "Only the Smart Notifications configuration is changed. The Home Assistant entity remains.", "data": {"device_id": "Output device", "confirm": "Really remove this output device"}},
-      "events": {"title": "Events", "menu_options": {"events_form": "Edit event", "back": "Back to main menu"}, "menu_option_descriptions": {"events_form": "Edit the display name, shared message and priority.", "back": "Return without applying unsaved changes."}},
+      "events": {"title": "Events", "menu_options": {"events_add_form": "Add event", "events_edit_form": "Edit event", "events_remove_form": "Remove event", "back": "Back to main menu"}, "menu_option_descriptions": {"events_add_form": "Create an event with a stable ID.", "events_edit_form": "Change text, priority or enabled state.", "events_remove_form": "Remove an event after confirmation.", "back": "Return without applying unsaved changes."}},
+      "events_add_form": {"title": "Add event", "data": {"reason": "Stable event ID", "name": "Display name", "message": "Shared message text", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
+      "events_edit_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
+      "events_remove_form": {"title": "Remove event", "description": "Only the Smart Notifications configuration is changed.", "data": {"reason": "Event", "confirm": "Really remove this event"}},
+      "discover_notifications": {"title": "Discover notifications", "menu_options": {"discover_scan_form": "Scan for notifications", "discover_candidates_form": "Show discovered suggestions", "back": "Back to main menu"}, "menu_option_descriptions": {"discover_scan_form": "Read-only analysis of automations and scripts.", "discover_candidates_form": "Review, adopt or ignore suggestions.", "back": "Return without changes."}},
+      "discover_scan_form": {"title": "Discover notifications", "description": "The scan does not change automations or scripts.", "data": {"confirm": "Start scan now"}},
+      "discover_candidates_form": {"title": "Discovered suggestions", "data": {"candidate_id": "Suggestion", "action": "Action"}},
       "events_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}},
       "event_devices": {"title": "Event → devices", "menu_options": {"event_devices_form": "Edit assignment", "back": "Back to main menu"}, "menu_option_descriptions": {"event_devices_form": "Assign output devices to an event.", "back": "Return without applying unsaved changes."}},
       "event_devices_form": {"title": "Event → devices", "data": {"reason": "Event", "devices": "Output devices"}},

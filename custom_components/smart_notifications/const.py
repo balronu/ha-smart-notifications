@@ -6,7 +6,7 @@ from datetime import timedelta
 
 DOMAIN = "smart_notifications"
 NAME = "Smart Notifications"
-VERSION = "0.1.0-beta.6"
+VERSION = "0.1.0-beta.7"
 PLATFORMS: list[str] = []
 
 SERVICE_SEND = "send"
@@ -15,6 +15,7 @@ SERVICE_TEST_EVENT = "test_event"
 CONF_EVENTS = "events"
 CONF_DEVICES = "devices"
 CONF_ROUTES = "routes"
+CONF_DISCOVERY = "discovery"
 CONF_TTS_ENTITY = "tts_entity"
 CONF_TITLE = "title"
 CONF_DEDUP_SECONDS = "dedup_seconds"
@@ -49,6 +50,7 @@ DEFAULT_CONFIG = {
     },
     CONF_DEVICES: {},
     CONF_ROUTES: {},
+    CONF_DISCOVERY: {"candidates": {}},
     CONF_TTS_ENTITY: "",
     CONF_DEDUP_SECONDS: DEFAULT_DEDUP_SECONDS,
     CONF_TITLE: DEFAULT_TITLE,

@@ -2,12 +2,14 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.6` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.7` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
 - native Config- und Options-Flows
 - Ereigniskatalog mit gemeinsamem Nachrichtentext für TTS und Push
+- grafische Ereignisverwaltung mit stabilen IDs, Prioritäten und Löschbestätigung
+- manueller, rein lesender Scanner für Benachrichtigungen in Automationen und Skripten
 - Geräteansicht und Ereignisansicht verwenden dieselbe Konfiguration
 - Media-Player als TTS-Ziele und Notify-Entitäten als Push-Ziele
 - Best-effort-Erkennung identischer physischer Geräte (z. B. Cast/Music-Assistant-Entitäten) mit manueller Gruppierung bei unklarer Identität
@@ -59,7 +61,7 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.6` release fixes the Options Flow step routing for device add, edit and remove operations while retaining the Beta.5 device-management and event-test improvements. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.7` release adds stable-ID event CRUD and a manual read-only scanner for notification-like automation and script actions. Detected candidates are never activated automatically and existing automations are not changed. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
 The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 
