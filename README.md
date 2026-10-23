@@ -2,7 +2,7 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.7` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.8` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
@@ -61,9 +61,9 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.7` release adds stable-ID event CRUD and a manual read-only scanner for notification-like automation and script actions. Detected candidates are never activated automatically and existing automations are not changed. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.8` release adds a searchable, filterable Discovery view to the existing Lovelace card. Results are grouped only when source, message, trigger and conditions match; technical IDs are explicitly marked as fallbacks. A detail view shows message, trigger, conditions, output targets, templates, confidence, grouping and last scan time. The adoption assistant allows editing the event ID, name, message, priority and devices before creating a disabled event. Detected candidates are never activated automatically, and existing automations are never changed. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
-The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
+The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Discovery reads `automations.yaml` and `scripts.yaml` only; UI/Storage automations are not read through private APIs. Script calls are detected but not semantically expanded, and dynamic templates remain visible as source text for manual review rather than being evaluated. `media_player.play_media` remains a possible candidate only. Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 
 ## Lizenz
 

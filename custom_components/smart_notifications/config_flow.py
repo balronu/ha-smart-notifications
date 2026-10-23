@@ -27,7 +27,7 @@ from .const import (
     DOMAIN,
     TEST_MESSAGE,
 )
-from .discovery import async_scan
+from .discovery import apply_candidate_action, async_scan
 from .storage import discovered_devices, merged_config
 
 _LOGGER = logging.getLogger(__name__)
@@ -361,17 +361,13 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
         candidates = data.get(CONF_DISCOVERY, {}).get("candidates", {})
         if user_input:
             candidate = candidates.get(user_input["candidate_id"])
-            if candidate and user_input["action"] == "ignore":
-                candidate["status"] = "ignored"
-            elif candidate and user_input["action"] == "adopt":
-                reason = candidate["suggested_reason"]
-                data[CONF_EVENTS].setdefault(reason, {"name": reason.replace("_", " ").title(), "message": candidate.get("message", ""), "enabled": False, "priority": "normal", "description": "Übernommener Vorschlag"})
-                candidate["status"] = "adopted"
+            if candidate:
+                apply_candidate_action(data, candidate["candidate_id"], user_input["action"])
             await self._save_options()
             return await self.async_step_discover_notifications()
         if not candidates:
             return self.async_abort(reason="no_candidates")
-        return self.async_show_form(step_id="discover_candidates_form", data_schema=vol.Schema({vol.Required("candidate_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": key, "label": f"{item['source_type']}: {item['source_id']} – {item['service']} ({item['status']})"} for key, item in candidates.items()])), vol.Required("action", default="review"): selector.SelectSelector(selector.SelectSelectorConfig(options=["review", "adopt", "ignore"]))}))
+        return self.async_show_form(step_id="discover_candidates_form", data_schema=vol.Schema({vol.Required("candidate_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": key, "label": f"{item.get('source_name', item['source_id'])} – {item['service']}"} for key, item in candidates.items()])), vol.Required("action", default="review"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": "review", "label": "Prüfen"}, {"value": "adopt", "label": "Übernehmen"}, {"value": "ignore", "label": "Ignorieren"}]))}))
 
     async def async_step_event_devices(self, user_input=None):
         return self.async_show_menu(

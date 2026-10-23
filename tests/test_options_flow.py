@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from smart_notifications.config_flow import SmartNotificationsOptionsFlow
@@ -125,6 +126,49 @@ async def test_discovery_scan_is_manual_and_returns_to_menu(hass: HomeAssistant)
     result = await flow.async_step_discover_scan_form({"confirm": True})
     assert result["type"] == "menu"
     assert entry.options["discovery"]["candidates"] == {}
+
+
+@pytest.mark.asyncio
+async def test_discovery_adoption_is_editable_and_disabled(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={
+        "discovery": {"candidates": {
+            "candidate-1": {
+                "candidate_id": "candidate-1", "source_type": "automation", "source_id": "house",
+                "source_name": "Haushaltsmeldung", "suggested_reason": "door_open", "message": "Tür offen",
+                "status": "new",
+            }
+        }}
+    })
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+
+    result = await flow.async_step_discover_candidates_form({"candidate_id": "candidate-1", "action": "adopt"})
+    assert result["type"] == "menu"
+    adopted = entry.options["discovery"]["candidates"]["candidate-1"]
+    assert adopted["status"] == "adopted"
+    assert entry.options["events"]["door_open"]["enabled"] is False
+    assert entry.options["events"]["door_open"]["message"] == "Tür offen"
+
+
+@pytest.mark.asyncio
+async def test_discovery_candidate_labels_use_friendly_names_and_no_raw_status(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={
+        "discovery": {"candidates": {
+            "candidate-1": {"candidate_id": "candidate-1", "source_type": "automation", "source_id": "house", "source_name": "Haushaltsmeldung", "service": "notify.send_message", "status": "new"}
+        }}
+    })
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+    result = await flow.async_step_discover_candidates_form()
+    schema = result["data_schema"].schema
+    labels = schema[vol.Required("candidate_id")].config["options"]
+    assert labels[0]["label"] == "Haushaltsmeldung – notify.send_message"
+    actions = schema[vol.Required("action", default="review")].config["options"]
+    assert [item["label"] for item in actions] == ["Prüfen", "Übernehmen", "Ignorieren"]
 
 
 def _discovered_devices():

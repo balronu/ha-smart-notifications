@@ -11,6 +11,9 @@ def test_card_contains_editor_and_deliberate_test_api():
     assert "smart-notifications-card-editor" in source
     assert "smart_notifications/status" in source
     assert "smart_notifications/test" in source
+    assert "smart_notifications/discovery" in source
+    assert "Als deaktiviertes Ereignis übernehmen" in source
+    assert "Start scan" in source
     assert "config-changed" in source
 
 
@@ -21,4 +24,4 @@ async def test_frontend_registration_uses_current_ha_api_and_is_idempotent():
     await async_setup_frontend(hass)
     await async_setup_frontend(hass)
     assert static.async_register_static_paths.await_count == 1
-    assert static.register_view.call_count == 2
+    assert static.register_view.call_count == 3

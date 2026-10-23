@@ -11,6 +11,7 @@ from homeassistant.components.http.server import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, SERVICE_TEST_DEVICE, SERVICE_TEST_EVENT
+from .discovery import apply_candidate_action, async_scan
 from .storage import merged_config
 
 
@@ -48,6 +49,55 @@ class SmartNotificationsTestView(HomeAssistantView):
         return self.json({"ok": True})
 
 
+class SmartNotificationsDiscoveryView(HomeAssistantView):
+    """Authenticated discovery API used by the Lovelace card.
+
+    It delegates state changes to the same discovery helper used by the native
+    Options Flow. It never writes automation or script sources.
+    """
+
+    url = "/api/smart_notifications/discovery"
+    name = "api:smart_notifications:discovery"
+    requires_auth = True
+
+    @staticmethod
+    def _entry(hass: HomeAssistant):
+        return next(iter(hass.config_entries.async_entries(DOMAIN)), None)
+
+    async def get(self, request: web.Request) -> web.Response:
+        hass: HomeAssistant = request.app["hass"]
+        entry = self._entry(hass)
+        config = merged_config(entry.options if entry else {})
+        candidates = list(config.get("discovery", {}).get("candidates", {}).values())
+        return self.json({
+            "configured": entry is not None,
+            "source_scope": "automations.yaml und scripts.yaml; Storage-Automationen werden nicht über private APIs gelesen.",
+            "candidates": candidates,
+            "events": [{"id": key, **value, "devices": config["routes"].get(key, [])} for key, value in config["events"].items()],
+            "devices": [{"id": key, "name": value.get("alias") or value.get("name") or key, "entity_id": value.get("entity_id")} for key, value in config["devices"].items()],
+        })
+
+    async def post(self, request: web.Request) -> web.Response:
+        hass: HomeAssistant = request.app["hass"]
+        entry = self._entry(hass)
+        if entry is None:
+            return self.json({"error": "not_configured"}, status_code=409)
+        payload: dict[str, Any] = await request.json()
+        config = merged_config(entry.options)
+        action = payload.get("action")
+        if action == "scan":
+            candidates = await async_scan(hass, config.get("discovery"))
+            config["discovery"] = {"candidates": {item["candidate_id"]: item for item in candidates}}
+        elif action in {"review", "ignore", "adopt"}:
+            candidate = apply_candidate_action(config, str(payload.get("candidate_id", "")), action, payload.get("edits"))
+            if candidate is None:
+                return self.json({"error": "candidate_not_found"}, status_code=404)
+        else:
+            return self.json({"error": "unsupported_action"}, status_code=400)
+        hass.config_entries.async_update_entry(entry, options=config)
+        return self.json({"ok": True, "candidates": list(config["discovery"]["candidates"].values()), "events": config["events"]})
+
+
 async def async_setup_frontend(hass: HomeAssistant) -> None:
     """Register the static card and API once during domain setup."""
     if hass.http is None:
@@ -61,4 +111,5 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
     )
     hass.http.register_view(SmartNotificationsStatusView)
     hass.http.register_view(SmartNotificationsTestView)
+    hass.http.register_view(SmartNotificationsDiscoveryView)
     runtime["frontend_registered"] = True

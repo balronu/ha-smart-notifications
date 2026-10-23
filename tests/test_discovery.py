@@ -28,6 +28,26 @@ def test_scan_ignores_unrelated_media_and_supports_repeat():
     assert candidates[0]["confidence"] == "high"
 
 
+def test_discovery_groups_same_message_and_keeps_different_messages_separate():
+    candidates = scan_documents({"automation": {"house": {"alias": "Haushaltsmeldung", "action": [
+        {"service": "notify.mobile_app_michael", "data": {"message": "Tür offen"}},
+        {"service": "notify.mobile_app_michaela", "data": {"message": "Tür offen"}},
+        {"service": "notify.mobile_app_michael", "data": {"message": "Fenster offen"}},
+    ]}}})
+    assert len({item["group_id"] for item in candidates}) == 2
+    same = [item for item in candidates if item["message"] == "Tür offen"]
+    assert len(same) == 2
+    assert {item["group_size"] for item in same} == {2}
+    assert all(item["source_name"] == "Haushaltsmeldung" for item in candidates)
+
+
+def test_discovery_marks_templates_and_technical_fallback_name():
+    candidates = scan_documents({"script": {"notify_later": {"sequence": [{"action": "tts.speak", "data": {"message": "{{ states('sensor.foo') }}"}}]}}})
+    assert candidates[0]["source_name_quality"] == "technical_fallback"
+    assert candidates[0]["message_is_template"] is True
+    assert candidates[0]["templates"]
+
+
 @pytest.mark.asyncio
 async def test_async_scan_marks_removed_candidates_as_not_found(hass, tmp_path):
     (tmp_path / "automations.yaml").write_text(
