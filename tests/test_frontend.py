@@ -17,10 +17,14 @@ def test_card_contains_editor_and_deliberate_test_api():
     assert "Als deaktiviertes Ereignis übernehmen" in source
     assert "Start scan" in source
     assert "config-changed" in source
+    assert "message_type" in source
+    assert "event-parameters" in source
+    assert "smart_notifications/preview" in source
+    assert "data-adopt-device" in source
     assert 'card.type==="smart-notifications-card"' in source
     assert 'customElements.define("smart-notifications-card"' in source
     assert 'getConfigElement()' in source
-    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.9")
+    assert CARD_RESOURCE_URL.endswith("?v=0.1.0-beta.10")
 
 
 @pytest.mark.asyncio
@@ -31,7 +35,7 @@ async def test_frontend_registration_uses_current_ha_api_and_is_idempotent():
         await async_setup_frontend(hass)
         await async_setup_frontend(hass)
     assert static.async_register_static_paths.await_count == 1
-    assert static.register_view.call_count == 3
+    assert static.register_view.call_count == 4
     add_extra_js_url.assert_called_once_with(hass, CARD_RESOURCE_URL)
 
 

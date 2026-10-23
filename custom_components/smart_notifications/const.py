@@ -6,7 +6,7 @@ from datetime import timedelta
 
 DOMAIN = "smart_notifications"
 NAME = "Smart Notifications"
-VERSION = "0.1.0-beta.9"
+VERSION = "0.1.0-beta.10"
 PLATFORMS: list[str] = []
 
 SERVICE_SEND = "send"
@@ -24,9 +24,12 @@ DEFAULT_DEDUP_SECONDS = 30
 DEFAULT_TITLE = "Home Assistant"
 ATTR_REASON = "reason"
 ATTR_CONTEXT = "context"
+ATTR_VARIABLES = "variables"
 ATTR_EVENT_KEY = "event_key"
 ATTR_DEVICE_ID = "device_id"
 ATTR_MESSAGE = "message"
+CONF_MESSAGE_TYPE = "message_type"
+CONF_PARAMETERS = "parameters"
 ATTR_CONFIRM = "confirm"
 TEST_MESSAGE = "Dies ist eine Testnachricht von Smart Notifications."
 

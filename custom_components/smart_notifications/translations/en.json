@@ -13,6 +13,11 @@
   "options": {
     "error": {
       "event_not_found": "The selected event is not available.",
+      "template_invalid": "The template is syntactically invalid.",
+      "template_render_failed": "The message could not be rendered.",
+      "rendered_message_empty": "The rendered result is empty.",
+      "rendered_message_unavailable": "The rendered result is unavailable.",
+      "missing_parameters": "Required parameters are missing.",
       "message_missing": "No message text is saved for this event.",
       "no_event_devices": "No output devices are configured for this event yet.",
       "event_exists": "This event ID already exists.",
@@ -38,8 +43,8 @@
       "devices_edit_form": {"title": "Edit output device", "data": {"device_id": "Configured output device", "entity_id": "Preferred output entity", "alias": "Display name (optional)", "physical_group": "Physical device group (optional)", "enabled": "Enabled"}, "data_description": {"device_id": "The device to edit.", "entity_id": "The entity used for this profile.", "physical_group": "Alternate entities of the same physical device can be grouped."}},
       "devices_remove_form": {"title": "Remove output device", "description": "Only the Smart Notifications configuration is changed. The Home Assistant entity remains.", "data": {"device_id": "Output device", "confirm": "Really remove this output device"}},
       "events": {"title": "Events", "menu_options": {"events_add_form": "Add event", "events_edit_form": "Edit event", "events_remove_form": "Remove event", "back": "Back to main menu"}, "menu_option_descriptions": {"events_add_form": "Create an event with a stable ID.", "events_edit_form": "Change text, priority or enabled state.", "events_remove_form": "Remove an event after confirmation.", "back": "Return without applying unsaved changes."}},
-      "events_add_form": {"title": "Add event", "data": {"reason": "Stable event ID", "name": "Display name", "message": "Shared message text", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
-      "events_edit_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
+      "events_add_form": {"title": "Add event", "data": {"reason": "Stable event ID", "name": "Display name", "message": "Shared message text", "message_type": "Message type", "parameters": "Runtime parameters", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
+      "events_edit_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "message_type": "Message type", "parameters": "Runtime parameters", "description": "Description", "enabled": "Enabled", "priority": "Priority", "dedup_seconds": "Duplicate protection (seconds)"}},
       "events_remove_form": {"title": "Remove event", "description": "Only the Smart Notifications configuration is changed.", "data": {"reason": "Event", "confirm": "Really remove this event"}},
       "discover_notifications": {"title": "Discover notifications", "menu_options": {"discover_scan_form": "Scan for notifications", "discover_candidates_form": "Show discovered suggestions", "back": "Back to main menu"}, "menu_option_descriptions": {"discover_scan_form": "Read-only analysis of automations and scripts.", "discover_candidates_form": "Review, adopt or ignore suggestions.", "back": "Return without changes."}},
       "discover_scan_form": {"title": "Discover notifications", "description": "The scan does not change automations or scripts.", "data": {"confirm": "Start scan now"}},
@@ -55,5 +60,5 @@
       "test_event_form": {"title": "Test an event", "description": "Configured outputs are executed only after explicit confirmation.", "data": {"reason": "Event", "confirm": "Really send test output"}}
     }
   },
-  "selector": {"priority": {"options": {"low": "Low", "normal": "Normal", "high": "High", "critical": "Critical"}}}
+  "selector": {"priority": {"options": {"low": "Low", "normal": "Normal", "high": "High", "critical": "Critical"}}, "message_type": {"options": {"static": "Static text", "template": "Home Assistant template", "parameters": "Runtime parameters", "combined": "Combined text"}}}
 }

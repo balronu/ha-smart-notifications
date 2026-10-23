@@ -29,6 +29,25 @@ def _summarize(value: Any, limit: int = 500) -> Any:
     return str(value)[:limit]
 
 
+def _templates(value: Any) -> list[str]:
+    """Find templates in nested action data without evaluating them."""
+    if isinstance(value, str):
+        return [value] if any(marker in value for marker in ("{{", "{%", "{#")) else []
+    if isinstance(value, list):
+        return [template for item in value for template in _templates(item)]
+    if isinstance(value, dict):
+        return [template for item in value.values() for template in _templates(item)]
+    return []
+
+
+def _template_variables(templates: list[str]) -> list[str]:
+    names: set[str] = set()
+    for template in templates:
+        cleaned = re.sub(r"(['\"]).*?\1", "", template)
+        names.update(re.findall(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\b", cleaned))
+    return sorted(name for name in names if name not in {"states", "state_attr", "is_state", "now", "true", "false", "if", "else", "endif", "float", "int", "default"})
+
+
 def _walk_actions(node: Any, path: str = "", context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     found: list[dict[str, Any]] = []
     context = context or {}
@@ -64,14 +83,14 @@ def _candidate(source_type: str, source_id: str, source: dict[str, Any], action:
         entity_ids = [entity_ids]
     confidence = "high" if service_lower in {"tts.speak", "notify.send_message", "smart_notifications.send"} and message else "possible"
     output_type = "tts" if service_lower == "tts.speak" else "push" if service_lower.startswith("notify.") else "music_assistant" if "music_assistant" in service_lower else "other"
-    templates = [str(value) for value in (data.values() if isinstance(data, dict) else []) if isinstance(value, str) and ("{{" in value or "{%" in value)]
+    templates = _templates(data)
     source_name = source.get("alias") or source.get("name")
     display_name = source_name or f"Technische {source_type}-ID: {source_id}"
     grouping_material = json.dumps([source_type, source_id, message, action.get("conditions"), action.get("trigger")], sort_keys=True, default=str)
     group_id = hashlib.sha256(grouping_material.encode()).hexdigest()[:24]
     key_material = f"{source_type}:{source_id}:{action['path']}:{service}:{message}:{entity_ids}"
     candidate_id = hashlib.sha256(key_material.encode()).hexdigest()[:24]
-    suggested = _slug(message or source_id)
+    suggested = _slug(source.get("alias") or source.get("name") or source_id)
     return {
         "candidate_id": candidate_id,
         "source_type": source_type,
@@ -85,6 +104,9 @@ def _candidate(source_type: str, source_id: str, source: dict[str, Any], action:
         "message": message,
         "message_is_template": bool(templates),
         "templates": templates,
+        "template_variables": _template_variables(templates),
+        "unresolved_variables": _template_variables(templates),
+        "message_type": "template" if templates else "static",
         "entity_ids": entity_ids,
         "suggested_reason": suggested,
         "confidence": confidence,
@@ -158,6 +180,8 @@ def apply_candidate_action(
         config["events"].setdefault(reason, {
             "name": base_name,
             "message": str(edits.get("message", candidate.get("message", ""))),
+            "message_type": str(edits.get("message_type", candidate.get("message_type", "static"))),
+            "parameters": edits.get("parameters", {name: {"type": "text", "required": True} for name in candidate.get("template_variables", [])}),
             "enabled": False,
             "priority": str(edits.get("priority") or "normal"),
             "description": "Aus Discovery übernommen; ursprüngliche Quelle bleibt unverändert.",

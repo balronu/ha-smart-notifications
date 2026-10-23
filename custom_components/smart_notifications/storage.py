@@ -12,6 +12,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
 from .const import CONF_DEVICES, CONF_EVENTS, CONF_ROUTES, DEFAULT_CONFIG
+from .message import normalize_event
 
 UUID_RE = re.compile(r"^[0-9a-f]{32}$", re.IGNORECASE)
 
@@ -24,7 +25,10 @@ def merged_config(options: dict[str, Any] | None) -> dict[str, Any]:
     config = default_config()
     for key, value in (options or {}).items():
         if key in (CONF_EVENTS, CONF_DEVICES, CONF_ROUTES) and isinstance(value, dict):
-            config[key].update(deepcopy(value))
+            if key == CONF_EVENTS:
+                config[key].update({event_key: normalize_event(deepcopy(event)) for event_key, event in value.items()})
+            else:
+                config[key].update(deepcopy(value))
         else:
             config[key] = deepcopy(value)
     return config

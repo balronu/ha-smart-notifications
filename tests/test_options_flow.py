@@ -70,6 +70,25 @@ async def test_event_edit_prefills_saved_values_before_update(hass: HomeAssistan
 
 
 @pytest.mark.asyncio
+async def test_event_forms_persist_dynamic_message_type_and_parameters(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+    result = await flow.async_step_events_add_form({
+        "reason": "bathroom_cold", "name": "Bad kalt",
+        "message": "{{ states('sensor.bathroom') }} Grad",
+        "message_type": "template", "parameters": {}, "enabled": False,
+        "priority": "high", "description": "Dynamisch", "dedup_seconds": 0,
+    })
+    assert result["type"] == "menu"
+    event = entry.options["events"]["bathroom_cold"]
+    assert event["message_type"] == "template"
+    assert event["parameters"] == {}
+
+
+@pytest.mark.asyncio
 async def test_options_flow_back_returns_to_main_without_closing(hass: HomeAssistant):
     entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
     entry.add_to_hass(hass)
