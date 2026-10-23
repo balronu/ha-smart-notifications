@@ -23,7 +23,7 @@ from .const import (
     DOMAIN,
     TEST_MESSAGE,
 )
-from .storage import discovered_devices, discovered_tts_entities, merged_config
+from .storage import discovered_devices, merged_config
 
 
 class SmartNotificationsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -39,11 +39,6 @@ class SmartNotificationsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({vol.Optional(CONF_TTS_ENTITY, default=""): selector.EntitySelector(selector.EntitySelectorConfig(domain="tts")), vol.Optional(CONF_TITLE, default="Home Assistant"): str, vol.Optional(CONF_DEDUP_SECONDS, default=30): vol.Coerce(int)}),
-            description_placeholders={
-                "media_player_count": str(sum(1 for item in discovered_devices(self.hass) if item["channel"] == "tts")),
-                "notify_count": str(sum(1 for item in discovered_devices(self.hass) if item["channel"] == "notify")),
-                "tts_count": str(len(discovered_tts_entities(self.hass))),
-            },
         )
 
     @staticmethod

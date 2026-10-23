@@ -1,5 +1,13 @@
+import sys
+from pathlib import Path
+
 import pytest
 from homeassistant import loader
+
+sys.path.insert(0, str(Path.cwd()))
+import custom_components
+
+custom_components.__path__.append(str(Path("custom_components").resolve()))
 
 pytest_plugins = ("pytest_homeassistant_custom_component",)
 

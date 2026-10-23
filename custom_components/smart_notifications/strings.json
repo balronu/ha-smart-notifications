@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Smart Notifications",
-        "description": "Zentrale Ausgaben konfigurieren. Gefunden: {media_player_count} TTS-Ausgabegeräte, {notify_count} Push-Dienste und {tts_count} TTS-Engines.",
+        "description": "Zentrale Ausgaben konfigurieren.",
         "data": {"tts_entity": "TTS-Engine", "title": "Standardtitel", "dedup_seconds": "Duplikatschutz (Sekunden)"},
         "data_description": {"tts_entity": "Die TTS-Engine, die Audio für ausgewählte Media Player erzeugt.", "title": "Titel für schriftliche Benachrichtigungen.", "dedup_seconds": "Zeitfenster, in dem gleiche Ausgaben unterdrückt werden."}
       }

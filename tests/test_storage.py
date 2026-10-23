@@ -1,5 +1,5 @@
 from smart_notifications.const import EVENT_DEFINITIONS
-from smart_notifications.storage import default_config, merged_config, route_map
+from smart_notifications.storage import default_config, discovered_tts_entities, merged_config, route_map
 
 
 def test_default_catalog_contains_required_events():
@@ -23,3 +23,8 @@ def test_partial_beta1_options_keep_default_catalog():
     config = merged_config({"events": {"washer_finished": {"message": "Neu"}}})
     assert config["events"]["washer_finished"]["message"] == "Neu"
     assert config["events"]["smoke_detected"]["message"]
+
+
+def test_tts_engines_are_discovered_from_live_tts_states(hass):
+    hass.states.async_set("tts.piper", "2026-10-23T00:00:00+00:00", {"friendly_name": "Piper"})
+    assert discovered_tts_entities(hass) == [{"entity_id": "tts.piper", "name": "Piper"}]
