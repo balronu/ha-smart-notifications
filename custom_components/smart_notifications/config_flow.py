@@ -153,7 +153,9 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
     async def async_step_devices(self, user_input=None):
         return self.async_show_menu(
             step_id="devices",
-            menu_options=["devices_add", "devices_edit", "devices_remove", "back"],
+            menu_options=[
+                "devices_add_form", "devices_edit_form", "devices_remove_form", "back"
+            ],
         )
 
     def _show_devices_add_form(self, options, errors=None):
@@ -174,7 +176,7 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             errors=errors or {},
         )
 
-    async def async_step_devices_add(self, user_input=None):
+    async def async_step_devices_add_form(self, user_input=None):
         data = self._ensure_data()
         options = discovered_devices(self.hass)
         if not options:
@@ -196,7 +198,7 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             return await self.async_step_devices()
         return self._show_devices_add_form(options)
 
-    async def async_step_devices_edit(self, user_input=None):
+    async def async_step_devices_edit_form(self, user_input=None):
         data = self._ensure_data()
         if not data[CONF_DEVICES]:
             return self.async_abort(reason="no_devices")
@@ -246,7 +248,7 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             errors=errors or {},
         )
 
-    async def async_step_devices_remove(self, user_input=None):
+    async def async_step_devices_remove_form(self, user_input=None):
         data = self._ensure_data()
         if not data[CONF_DEVICES]:
             return self.async_abort(reason="no_devices")

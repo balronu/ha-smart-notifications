@@ -1,4 +1,16 @@
 # Änderungsprotokoll / Changelog
+## 0.1.0-beta.6 – 2026-10-23
+
+### Deutsch
+- Step-ID-Verkettung der Geräteverwaltung korrigiert: Hinzufügen, Bearbeiten und Entfernen öffnen jetzt ihre registrierten Options-Flow-Handler.
+- Echter HA-Options-Flow-Regressionstest für alle Geräteverwaltungs-Menüpunkte ergänzt.
+- Beta.5 war wegen eines nachgewiesenen UnknownStep-Laufzeitfehlers ein NO-GO und bleibt unverändert dokumentiert.
+
+### English
+- Fixed the device-management step-ID chain so add, edit and remove now call registered Options Flow handlers.
+- Added a real HA Options Flow regression test covering all device-management menu entries.
+- Beta.5 was a NO-GO because of the proven UnknownStep runtime failure and remains unchanged for traceability.
+
 
 ## 0.1.0-beta.5 – 2026-10-23
 

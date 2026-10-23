@@ -34,7 +34,7 @@ async def test_options_flow_back_returns_to_main_without_closing(hass: HomeAssis
 
     result = await flow.async_step_devices()
     assert set(result["menu_options"]) == {
-        "devices_add", "devices_edit", "devices_remove", "back"
+        "devices_add_form", "devices_edit_form", "devices_remove_form", "back"
     }
     result = await flow.async_step_back()
     assert result["type"] == "menu"
@@ -118,9 +118,9 @@ async def test_device_can_be_added_and_duplicate_entity_is_rejected(hass: HomeAs
     flow.handler = entry.entry_id
 
     with patch("smart_notifications.config_flow.discovered_devices", return_value=_discovered_devices()):
-        result = await flow.async_step_devices_add()
+        result = await flow.async_step_devices_add_form()
         assert result["step_id"] == "devices_add_form"
-        result = await flow.async_step_devices_add({
+        result = await flow.async_step_devices_add_form({
             "entity_id": "media_player.hub",
             "alias": "Esszimmer",
             "physical_group": "Esszimmer Hub",
@@ -130,7 +130,7 @@ async def test_device_can_be_added_and_duplicate_entity_is_rejected(hass: HomeAs
         assert profile["alias"] == "Esszimmer"
         assert profile["physical_key"] == "manual:esszimmer hub"
 
-        result = await flow.async_step_devices_add({"entity_id": "media_player.hub"})
+        result = await flow.async_step_devices_add_form({"entity_id": "media_player.hub"})
         assert result["errors"] == {"base": "duplicate_entity"}
 
 
@@ -155,7 +155,7 @@ async def test_device_can_be_edited_and_disabled(hass: HomeAssistant):
     flow.handler = entry.entry_id
 
     with patch("smart_notifications.config_flow.discovered_devices", return_value=_discovered_devices()):
-        result = await flow.async_step_devices_edit({
+        result = await flow.async_step_devices_edit_form({
             "device_id": "media_player_hub",
             "entity_id": "media_player.hub_music",
             "alias": "Esszimmer MA",
@@ -185,9 +185,9 @@ async def test_device_removal_requires_confirmation_and_cleans_routes(hass: Home
     flow.hass = hass
     flow.handler = entry.entry_id
 
-    result = await flow.async_step_devices_remove({"device_id": "media_player_hub", "confirm": False})
+    result = await flow.async_step_devices_remove_form({"device_id": "media_player_hub", "confirm": False})
     assert "media_player_hub" in entry.options["devices"]
     assert result["type"] == "menu"
-    await flow.async_step_devices_remove({"device_id": "media_player_hub", "confirm": True})
+    await flow.async_step_devices_remove_form({"device_id": "media_player_hub", "confirm": True})
     assert "media_player_hub" not in entry.options["devices"]
     assert entry.options["routes"]["washer_finished"] == ["other"]
