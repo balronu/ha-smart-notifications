@@ -28,3 +28,5 @@ jobs:
           PY
       - run: python tools/build_release_zip.py
       - uses: hacs/action@main
+        with:
+          category: integration
