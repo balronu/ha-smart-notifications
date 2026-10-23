@@ -1,46 +1,57 @@
-/* Smart Notifications Card – dependency-free Lit-compatible custom element. */
+/* Smart Notifications Card – documented Home Assistant REST APIs only. */
 class SmartNotificationsCard extends HTMLElement {
   setConfig(config) { this.config = config || {}; }
   set hass(value) { this._hass = value; if (!this.shadowRoot) this.attachShadow({mode: "open"}); this.refresh(); }
   get hass() { return this._hass; }
   connectedCallback() { this.refresh(); }
+  t(de, en) { return (this._hass?.locale?.language || "de").startsWith("de") ? de : en; }
   async refresh() {
     if (!this._hass || this._loading) return;
     this._loading = true;
-    try { this.data = await this._hass.callApi("GET", "smart_notifications/status"); } catch (error) { this.error = error; }
-    this._loading = false; this.render();
+    try { const [status, discovery] = await Promise.all([this._hass.callApi("GET", "smart_notifications/status"), this._hass.callApi("GET", "smart_notifications/discovery")]); this.data=status; this.discovery=discovery; this.error=null; }
+    catch (error) { this.error=error; }
+    this._loading=false; this.render();
   }
-  async test(kind, payload) {
-    if (!this._hass) return;
-    try { await this._hass.callApi("POST", "smart_notifications/test", {kind, ...payload}); await this.refresh(); }
-    catch (error) { this.error = error; this.render(); }
+  async mutate(payload) { try { await this._hass.callApi("POST", "smart_notifications/discovery", payload); await this.refresh(); } catch (error) { this.error=error; this.render(); } }
+  async test(kind, payload) { try { await this._hass.callApi("POST", "smart_notifications/test", {kind, ...payload}); await this.refresh(); } catch (error) { this.error=error; this.render(); } }
+  async adopt(candidateId) {
+    const form=this.shadowRoot.querySelector("#adopt-form");
+    const edits={name:form.querySelector("[name=name]").value, reason:form.querySelector("[name=reason]").value, message:form.querySelector("[name=message]").value, priority:form.querySelector("[name=priority]").value, devices:[...this.shadowRoot.querySelectorAll("input[data-adopt-device]:checked")].map(x=>x.value)};
+    await this.mutate({action:"adopt",candidate_id:candidateId,edits}); this._selected=null;
+  }
+  statusLabel(value) { return ({new:this.t("Neu","New"),unchanged:this.t("Unverändert","Unchanged"),changed:this.t("Geändert","Changed"),adopted:this.t("Übernommen","Adopted"),ignored:this.t("Ignoriert","Ignored"),not_found:this.t("Nicht mehr gefunden","Missing"),review:this.t("Prüfen","Review")})[value]||value||this.t("Unbekannt","Unknown"); }
+  typeLabel(value) { return ({tts:"TTS",push:"Push",music_assistant:"Music Assistant",other:this.t("Sonstige","Other")})[value]||value; }
+  groupCandidates() {
+    const query=(this._query||"").toLowerCase(), filter=this._filter||"all", groups=new Map();
+    (this.discovery?.candidates||[]).filter(item=>{const haystack=JSON.stringify(item).toLowerCase(); return (!query||haystack.includes(query))&&(filter==="all"||item.status===filter||item.output_type===filter||item.source_type===filter);}).forEach(item=>{const key=item.group_id||item.candidate_id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item);});
+    return [...groups.values()];
   }
   render() {
     if (!this.shadowRoot) return;
-    const d = this.data || {devices: [], events: [], history: [], configured: false};
-    const title = this.config?.title || "Smart Notifications";
-    this.shadowRoot.innerHTML = `<style>
-      :host{display:block}ha-card{padding:16px;color:var(--primary-text-color)}h2{margin:0 0 12px;color:var(--primary-color)}
-      .status{font-size:.9em;margin-bottom:12px}.ok{color:var(--success-color,#43a047)}.bad{color:var(--error-color,#d32f2f)}
-      .row{display:flex;gap:8px;align-items:center;border-top:1px solid var(--divider-color);padding:10px 0;flex-wrap:wrap}.name{flex:1;min-width:170px}.muted{color:var(--secondary-text-color);font-size:.85em}
-      button{border:0;border-radius:4px;padding:8px 12px;background:var(--primary-color);color:var(--text-primary-color,#fff);cursor:pointer}input,select{padding:8px;min-width:180px;background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:4px}
-      .section{margin-top:16px;font-weight:600}.history{max-height:160px;overflow:auto;font-size:.82em}
-    </style><ha-card><h2>${this.escape(title)}</h2><div class="status ${d.configured?'ok':'bad'}">${d.configured?'Bereit / Ready':'Nicht konfiguriert / Not configured'}</div>
-    <div class="section">Ausgabegeräte / Output devices</div>${d.devices.length?d.devices.map(x=>`<div class="row"><span class="name">${this.escape(x.name)}<br><span class="muted">${this.escape(x.channel)} · ${x.available?'verfügbar / available':'offline'}</span></span><input data-device-message="${this.escape(x.id)}" placeholder="Testnachricht / test message"><button data-device="${this.escape(x.id)}">Testen / Test</button></div>`).join(''):'<div class="muted">Keine Geräte konfiguriert.</div>'}
-    <div class="section">Ereignis / Event</div><div class="row"><select id="event">${d.events.map(x=>`<option value="${this.escape(x.id)}">${this.escape(x.name)}</option>`).join('')}</select><button id="event-test">Ereignis testen / Test event</button></div>
-    <div class="section">Letzte Ausgaben / Recent outputs</div><div class="history">${d.history.length?d.history.map(x=>`<div>${this.escape(x.timestamp)} · ${this.escape(x.reason)}</div>`).join(''):'Keine Ausgaben / No outputs'}</div>${this.error?`<div class="bad">${this.escape(String(this.error))}</div>`:''}</ha-card>`;
-    this.shadowRoot.querySelectorAll('[data-device]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.device; const input=this.shadowRoot.querySelector(`[data-device-message="${CSS.escape(id)}"]`); this.test('device',{device_id:id,message:input.value||undefined});}));
-    this.shadowRoot.querySelector('#event-test')?.addEventListener('click',()=>this.test('event',{reason:this.shadowRoot.querySelector('#event').value}));
+    const d=this.data||{devices:[],events:[],history:[],configured:false};
+    this.shadowRoot.innerHTML=`<style>
+      :host{display:block}ha-card{padding:16px;color:var(--primary-text-color)}h2{margin:0 0 12px;color:var(--primary-color)}.status{font-size:.9em;margin-bottom:12px}.ok{color:var(--success-color,#43a047)}.bad{color:var(--error-color,#d32f2f)}
+      .row{display:flex;gap:8px;align-items:center;border-top:1px solid var(--divider-color);padding:10px 0;flex-wrap:wrap}.name{flex:1;min-width:170px}.muted{color:var(--secondary-text-color);font-size:.85em}.section{margin-top:18px;font-weight:600}.tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.tools input{flex:1}button{border:0;border-radius:4px;padding:8px 12px;background:var(--primary-color);color:var(--text-primary-color,#fff);cursor:pointer}button.secondary{background:var(--secondary-background-color);color:var(--primary-text-color)}input,select,textarea{padding:8px;min-width:160px;box-sizing:border-box;background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:4px}textarea{width:100%;min-height:72px}.candidate{border:1px solid var(--divider-color);border-radius:6px;margin:8px 0;padding:10px}.candidate h3{margin:0 0 6px}.pill{display:inline-block;border-radius:12px;padding:2px 8px;margin-right:4px;background:var(--secondary-background-color);font-size:.8em}.detail{background:var(--secondary-background-color);padding:10px;margin-top:8px}.detail dl{display:grid;grid-template-columns:minmax(120px,30%) 1fr;gap:4px;margin:0}.detail dt{font-weight:600}.detail dd{margin:0;overflow-wrap:anywhere}.adopt{display:grid;gap:8px;margin-top:10px}.devices{display:flex;gap:8px;flex-wrap:wrap}.history{max-height:160px;overflow:auto;font-size:.82em}
+    </style><ha-card><h2>${this.escape(this.config?.title||"Smart Notifications")}</h2><div class="status ${d.configured?"ok":"bad"}">${d.configured?this.t("Bereit","Ready"):this.t("Nicht konfiguriert","Not configured")}</div>
+    <div class="section">${this.t("Benachrichtigungen erkennen","Discover notifications")}</div><div class="muted">${this.escape(this.discovery?.source_scope||this.t("Nur automations.yaml und scripts.yaml; keine privaten Storage-APIs.","Only automations.yaml and scripts.yaml; no private Storage APIs."))}</div>
+    <div class="tools"><input id="search" placeholder="${this.t("Suche nach Name, Text oder Ziel","Search name, message or target")}" value="${this.escape(this._query||"")}"><select id="filter"><option value="all">${this.t("Alle Filter","All filters")}</option><option value="new">${this.t("Neu","New")}</option><option value="adopted">${this.t("Übernommen","Adopted")}</option><option value="changed">${this.t("Geändert","Changed")}</option><option value="ignored">${this.t("Ignoriert","Ignored")}</option><option value="tts">TTS</option><option value="push">Push</option><option value="automation">${this.t("Automation","Automation")}</option><option value="script">${this.t("Skript","Script")}</option></select><button id="scan">${this.t("Scan starten","Start scan")}</button></div><div id="candidates">${this.renderCandidates()}</div>
+    <div class="section">${this.t("Ausgabegeräte","Output devices")}</div>${d.devices.length?d.devices.map(x=>`<div class="row"><span class="name">${this.escape(x.name)}<br><span class="muted">${this.escape(x.channel||"")} · ${x.available?this.t("verfügbar","available"):this.t("offline","offline")}</span></span></div>`).join(""):`<div class="muted">${this.t("Keine Geräte konfiguriert.","No devices configured.")}</div>`}<div class="section">${this.t("Letzte Ausgaben","Recent outputs")}</div><div class="history">${d.history?.length?d.history.map(x=>`<div>${this.escape(x.timestamp)} · ${this.escape(x.reason)}</div>`).join(""):this.t("Keine Ausgaben","No outputs")}</div>${this.error?`<div class="bad">${this.escape(String(this.error))}</div>`:""}</ha-card>`;
+    this.bind();
   }
-  escape(value) { return String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  static getConfigElement() { return document.createElement('smart-notifications-card-editor'); }
-  static getStubConfig() { return {title:'Smart Notifications'}; }
+  renderCandidates() {
+    const groups=this.groupCandidates(); if(!groups.length)return `<div class="muted">${this.t("Noch keine Treffer. Starte einen manuellen Scan.","No results yet. Start a manual scan.")}</div>`;
+    return groups.map(group=>{const item=group[0],selected=this._selected===item.candidate_id;return `<article class="candidate"><h3>${this.escape(item.source_name)} <span class="pill">${this.statusLabel(item.status)}</span></h3><div class="muted">${this.escape(item.source_type)} · ${this.escape(item.source_id)} · ${group.length} ${this.t("Ausgabe(n) gruppiert","output(s) grouped")}</div><div>${this.escape(item.message||this.t("Nachricht nicht eindeutig ermittelbar","Message not determinable"))}</div><div class="muted">${this.typeLabel(item.output_type)} · ${(item.grouped_targets||[]).map(x=>this.escape(x)).join(", ")||this.t("Ziel nicht eindeutig ermittelbar","Target not determinable")}</div><button class="secondary" data-detail="${this.escape(item.candidate_id)}">${this.t("Details prüfen","Review details")}</button>${selected?this.renderDetail(item,group):""}</article>`;}).join("");
+  }
+  renderDetail(item,group) {
+    const devices=this.discovery?.devices||[];
+    return `<div class="detail"><dl><dt>${this.t("Auslöser","Trigger")}</dt><dd>${this.escape(JSON.stringify(item.trigger)||this.t("Nicht eindeutig ermittelbar","Not determinable"))}</dd><dt>${this.t("Bedingungen","Conditions")}</dt><dd>${this.escape(JSON.stringify(item.conditions)||this.t("Nicht eindeutig ermittelbar","Not determinable"))}</dd><dt>${this.t("Ausgabearten","Output types")}</dt><dd>${group.map(x=>this.typeLabel(x.output_type)).join(", ")}</dd><dt>${this.t("Templates","Templates")}</dt><dd>${item.message_is_template?this.escape((item.templates||[]).join(" · ")):this.t("Keine dynamischen Templates erkannt","No dynamic templates detected")}</dd><dt>${this.t("Letzte Erkennung","Last detection")}</dt><dd>${this.escape(item.last_seen||this.t("Nicht gespeichert","Not stored"))}</dd><dt>${this.t("Gruppierungsregel","Grouping rule")}</dt><dd>${this.escape(item.grouping_note)}</dd></dl><form id="adopt-form" class="adopt"><label>${this.t("Ereignisname","Event name")}<input name="name" value="${this.escape(item.source_name)}"></label><label>${this.t("Ereignis-ID","Event ID")}<input name="reason" value="${this.escape(item.suggested_reason)}"></label><label>${this.t("Nachricht","Message")}<textarea name="message">${this.escape(item.message||"")}</textarea></label><label>${this.t("Priorität","Priority")}<select name="priority"><option value="low">${this.t("Niedrig","Low")}</option><option value="normal" selected>${this.t("Normal","Normal")}</option><option value="high">${this.t("Hoch","High")}</option><option value="critical">${this.t("Kritisch","Critical")}</option></select></label><div class="devices">${devices.map(x=>`<label><input type="checkbox" data-adopt-device value="${this.escape(x.id)}">${this.escape(x.name)}</label>`).join("")}</div><button type="submit">${this.t("Als deaktiviertes Ereignis übernehmen","Adopt as disabled event")}</button></form></div>`;
+  }
+  bind() { this.shadowRoot.querySelector("#scan")?.addEventListener("click",()=>this.mutate({action:"scan"}));this.shadowRoot.querySelector("#search")?.addEventListener("input",e=>{this._query=e.target.value;this.render();});this.shadowRoot.querySelector("#filter")?.addEventListener("change",e=>{this._filter=e.target.value;this.render();});this.shadowRoot.querySelectorAll("[data-detail]").forEach(button=>button.addEventListener("click",()=>{this._selected=button.dataset.detail;this.render();}));this.shadowRoot.querySelector("#adopt-form")?.addEventListener("submit",e=>{e.preventDefault();this.adopt(this._selected);}); }
+  escape(value) { return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+  static getConfigElement() { return document.createElement("smart-notifications-card-editor"); }
+  static getStubConfig() { return {title:"Smart Notifications"}; }
 }
-class SmartNotificationsCardEditor extends HTMLElement {
-  setConfig(config) { this.config = {...config}; this.render(); }
-  render() { this.innerHTML = `<label>Title / Titel <input value="${this.config?.title||'Smart Notifications'}"></label>`; this.querySelector('input')?.addEventListener('change', event=>{this.config.title=event.target.value; this.dispatchEvent(new CustomEvent('config-changed',{detail:{config:this.config},bubbles:true,composed:true}));}); }
-}
-if (!customElements.get('smart-notifications-card')) customElements.define('smart-notifications-card', SmartNotificationsCard);
-if (!customElements.get('smart-notifications-card-editor')) customElements.define('smart-notifications-card-editor', SmartNotificationsCardEditor);
-window.customCards = window.customCards || [];
-if (!window.customCards.some(card=>card.type==='smart-notifications-card')) window.customCards.push({type:'smart-notifications-card',name:'Smart Notifications Card',description:'Central output status and deliberate test actions.'});
+class SmartNotificationsCardEditor extends HTMLElement { setConfig(config){this.config={...config};this.render();} render(){this.innerHTML=`<label>Title / Titel <input value="${this.config?.title||"Smart Notifications"}"></label>`;this.querySelector("input")?.addEventListener("change",event=>{this.config.title=event.target.value;this.dispatchEvent(new CustomEvent("config-changed",{detail:{config:this.config},bubbles:true,composed:true}));});} }
+if(!customElements.get("smart-notifications-card"))customElements.define("smart-notifications-card",SmartNotificationsCard);
+if(!customElements.get("smart-notifications-card-editor"))customElements.define("smart-notifications-card-editor",SmartNotificationsCardEditor);
+window.customCards=window.customCards||[];if(!window.customCards.some(card=>card.type==="smart-notifications-card"))window.customCards.push({type:"smart-notifications-card",name:"Smart Notifications Card",description:"Discovery review, output status and deliberate tests."});

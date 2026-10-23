@@ -109,3 +109,22 @@
 - Central `smart_notifications.send` action.
 - Best-effort duplicate suppression for multiple entities of one physical device.
 - Deliberate device/event tests and a responsive Lovelace card with editor.
+## 0.1.0-beta.8 – 2026-10-23
+
+### Deutsch
+
+- Discovery in der bestehenden Lovelace-Karte mit Suche, Filtern und Gruppierung nach Quelle, Nachricht, Auslöser und Bedingungen.
+- Verständliche Automation-/Skriptnamen mit gekennzeichnetem technischem Fallback.
+- Detailansicht für Nachricht, Trigger, Bedingungen, Templates, Ausgabearten, Ziele, Qualität, Status und letzte Erkennung.
+- Bearbeitbarer Übernahmeassistent; Übernahmen erzeugen ausschließlich deaktivierte Ereignisse.
+- Alle Statuswerte und Aktionen werden in der Karte auf Deutsch bzw. Englisch lokalisiert.
+- Quellen bleiben unverändert; Storage-Automationen werden ohne private APIs nicht gelesen.
+
+### English
+
+- Discovery in the existing Lovelace card with search, filters, and grouping by source, message, trigger, and conditions.
+- Friendly automation/script names with an explicit technical fallback.
+- Detail view for message, trigger, conditions, templates, output types, targets, confidence, status, and last scan.
+- Editable adoption assistant; adoption creates disabled events only.
+- Status values and actions are localized in German and English.
+- Source automations and scripts remain unchanged; Storage automations are not read through private APIs.
