@@ -11,19 +11,28 @@
     "abort": {"already_configured": "Smart Notifications is already configured."}
   },
   "options": {
+    "abort": {"no_devices": "Please add an output device first.", "no_discovered_devices": "No compatible output devices were found."},
     "step": {
       "init": {
         "title": "Smart Notifications",
-        "menu_options": {"settings": "Output options", "devices": "Manage devices", "events": "Manage events and messages", "event_devices": "Assign events → devices", "device_events": "Assign devices → events", "test_device": "Test one device", "test_event": "Test an event"},
-        "menu_option_descriptions": {"settings": "TTS engine, default title and duplicate protection.", "devices": "Select TTS output devices and push services.", "events": "Edit events, default messages and priorities.", "event_devices": "Choose outputs for one event.", "device_events": "Choose events for one device.", "test_device": "Test one output after confirmation.", "test_event": "Test a complete event after confirmation."}
+        "menu_options": {"settings": "Basic settings", "devices": "Output devices", "events": "Events", "event_devices": "Event → devices", "device_events": "Device → events", "test_device": "Test one device", "test_event": "Test an event"},
+        "menu_option_descriptions": {"settings": "Edit the TTS engine, default title and duplicate protection.", "devices": "Manage voice and push output devices.", "events": "Edit events and shared message texts.", "event_devices": "Assign output devices to an event.", "device_events": "Assign events to an output device.", "test_device": "Test one output after confirmation.", "test_event": "Test a complete event after confirmation."}
       },
-      "settings": {"title": "Output options", "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"}, "data_description": {"tts_entity": "The TTS engine used to create audio for media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}},
-      "devices": {"title": "Manage devices", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "physical_group": "Manual physical group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "physical_group": "The same group name can join alternate entities of one physical device."}},
-      "events": {"title": "Manage events and messages", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}},
-      "event_devices": {"title": "Assign events → devices", "data": {"reason": "Event", "devices": "Output devices"}},
-      "device_events": {"title": "Assign devices → events", "data": {"device": "Device", "events": "Events"}},
-      "test_device": {"title": "Test one device", "description": "An output is sent only after explicit confirmation.", "data": {"device_id": "Device", "message": "Test message", "confirm": "Really send test output"}},
-      "test_event": {"title": "Test an event", "description": "Configured outputs are executed only after explicit confirmation.", "data": {"reason": "Event", "confirm": "Really send test output"}}
+      "settings": {"title": "Basic settings", "menu_options": {"settings_form": "Edit basic settings", "back": "Back to main menu"}, "menu_option_descriptions": {"settings_form": "Edit the TTS engine, default title and duplicate protection.", "back": "Return without applying unsaved changes."}},
+      "settings_form": {"title": "Basic settings", "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"}, "data_description": {"tts_entity": "The TTS engine used to create audio for media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}},
+      "devices": {"title": "Output devices", "menu_options": {"devices_form": "Add output device", "back": "Back to main menu"}, "menu_option_descriptions": {"devices_form": "Select a compatible voice or push device.", "back": "Return without applying unsaved changes."}},
+      "devices_form": {"title": "Add output device", "description": "Media players are detected as TTS output devices. Notify entities are detected as push services. A manual physical group only joins explicitly confirmed entities.", "data": {"entity_id": "Output device or push service", "physical_group": "Physical device group (optional)"}, "data_description": {"entity_id": "Piper and other TTS engines are selected separately and are not speakers.", "physical_group": "The same group name can join alternate entities of one physical device."}},
+      "events": {"title": "Events", "menu_options": {"events_form": "Edit event", "back": "Back to main menu"}, "menu_option_descriptions": {"events_form": "Edit the display name, shared message and priority.", "back": "Return without applying unsaved changes."}},
+      "events_form": {"title": "Edit event", "data": {"reason": "Event", "name": "Display name", "message": "Shared message text", "enabled": "Enabled", "priority": "Priority"}},
+      "event_devices": {"title": "Event → devices", "menu_options": {"event_devices_form": "Edit assignment", "back": "Back to main menu"}, "menu_option_descriptions": {"event_devices_form": "Assign output devices to an event.", "back": "Return without applying unsaved changes."}},
+      "event_devices_form": {"title": "Event → devices", "data": {"reason": "Event", "devices": "Output devices"}},
+      "device_events": {"title": "Device → events", "menu_options": {"device_events_form": "Edit assignment", "back": "Back to main menu"}, "menu_option_descriptions": {"device_events_form": "Assign events to an output device.", "back": "Return without applying unsaved changes."}},
+      "device_events_form": {"title": "Device → events", "data": {"device": "Output device", "events": "Events"}},
+      "test_device": {"title": "Test one device", "menu_options": {"test_device_form": "Select device", "back": "Back to main menu"}, "menu_option_descriptions": {"test_device_form": "Select a test message and target device.", "back": "Return without sending a test."}},
+      "test_device_form": {"title": "Test one device", "description": "An output is sent only after explicit confirmation.", "data": {"device_id": "Output device", "message": "Test message", "confirm": "Really send test output"}},
+      "test_event": {"title": "Test an event", "menu_options": {"test_event_form": "Select event", "back": "Back to main menu"}, "menu_option_descriptions": {"test_event_form": "Test an event after explicit confirmation.", "back": "Return without sending a test."}},
+      "test_event_form": {"title": "Test an event", "description": "Configured outputs are executed only after explicit confirmation.", "data": {"reason": "Event", "confirm": "Really send test output"}}
     }
-  }
+  },
+  "selector": {"priority": {"options": {"low": "Low", "normal": "Normal", "high": "High", "critical": "Critical"}}}
 }

@@ -1,5 +1,23 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.4 – 2026-10-23
+
+### Deutsch
+- Options Flow in native Untermenüs mit „Zurück zum Hauptmenü“ überführt.
+- Gespeicherte Optionen bleiben beim Navigieren erhalten; ungespeicherte Formulareingaben werden beim Schließen verworfen.
+- Hauptmenüs, Untermenüs, Formularfelder und Prioritäten vollständig auf Deutsch und Englisch beschriftet.
+- Geräteauswahl zeigt Anzeigename, Bereich, Integration und Ausgabeart statt doppelter Entity-IDs.
+- Leere Gerätelisten liefern eine verständliche Meldung statt leerer Auswahlfelder.
+- Echte HA-Übersetzungs-, Navigations- und Persistenz-Regressionstests ergänzt.
+
+### English
+- Reworked the Options Flow into native nested menus with an explicit “Back to main menu” action.
+- Submitted options persist while navigating; closing a form discards unsaved input.
+- Main menus, submenus, form fields and priorities are fully labeled in German and English.
+- Device choices show name, area, integration and output channel instead of duplicated entity IDs.
+- Empty device lists provide clear guidance instead of empty selectors.
+- Added real HA translation, navigation and persistence regression coverage.
+
 ## 0.1.0-beta.3 – 2026-10-23
 
 ### Deutsch

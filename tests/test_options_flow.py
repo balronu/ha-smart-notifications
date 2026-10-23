@@ -12,11 +12,44 @@ async def test_options_flow_persists_shared_event_and_route_data(hass: HomeAssis
     flow = SmartNotificationsOptionsFlow()
     flow.hass = hass
     flow.handler = entry.entry_id
-    result = await flow.async_step_events(
+    result = await flow.async_step_events()
+    assert result["type"] == "menu"
+    assert set(result["menu_options"]) == {"events_form", "back"}
+    result = await flow.async_step_events_form(
         {"reason": "washer_finished", "name": "Washer", "message": "Fertig", "enabled": True, "priority": "high"}
     )
-    assert result["type"] == "create_entry"
-    assert result["data"]["events"]["washer_finished"]["message"] == "Fertig"
+    assert result["type"] == "menu"
+    assert entry.options["events"]["washer_finished"]["message"] == "Fertig"
+
+
+@pytest.mark.asyncio
+async def test_options_flow_back_returns_to_main_without_closing(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+
+    result = await flow.async_step_devices()
+    assert set(result["menu_options"]) == {"devices_form", "back"}
+    result = await flow.async_step_back()
+    assert result["type"] == "menu"
+    assert result["step_id"] == "init"
+
+
+@pytest.mark.asyncio
+async def test_options_flow_empty_device_actions_abort_with_guidance(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+
+    result = await flow.async_step_test_device()
+    assert result["type"] == "menu"
+    result = await flow.async_step_test_device_form()
+    assert result["type"] == "abort"
+    assert result["reason"] == "no_devices"
 
 
 @pytest.mark.asyncio
