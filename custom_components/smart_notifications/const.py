@@ -6,7 +6,7 @@ from datetime import timedelta
 
 DOMAIN = "smart_notifications"
 NAME = "Smart Notifications"
-VERSION = "0.1.0-beta.8"
+VERSION = "0.1.0-beta.9"
 PLATFORMS: list[str] = []
 
 SERVICE_SEND = "send"

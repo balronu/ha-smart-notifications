@@ -128,3 +128,22 @@
 - Editable adoption assistant; adoption creates disabled events only.
 - Status values and actions are localized in German and English.
 - Source automations and scripts remain unchanged; Storage automations are not read through private APIs.
+## 0.1.0-beta.9 – 2026-10-23
+
+### Deutsch
+
+- Lovelace-Kartenmodul über die unterstützte Home-Assistant-API `frontend.add_extra_js_url` registriert.
+- Cache-bereinigte Kartenressource für HACS-Upgrades ergänzt.
+- Kartenpicker-Metadaten und visueller Editor bleiben mit `custom:smart-notifications-card` nutzbar.
+- Gespeicherte Werte im Ereignis-Bearbeiten-Flow werden nach Auswahl korrekt vorbefüllt.
+- Automationsebene-Trigger und Bedingungen werden für Gruppierung und Trennung berücksichtigt.
+- Zusammengehörige Discovery-Kandidaten werden im nativen Fallback nicht mehr mehrfach als getrennte Gruppen angeboten.
+
+### English
+
+- Registered the Lovelace card module through Home Assistant's supported `frontend.add_extra_js_url` API.
+- Added a cache-busted card resource URL for HACS upgrades.
+- Preserved picker metadata and the visual editor for `custom:smart-notifications-card`.
+- Existing event values are prefilled after selecting an event in the edit flow.
+- Automation-level triggers and conditions now participate in grouping and separation.
+- Related discovery candidates are no longer offered as duplicate groups in the native fallback.

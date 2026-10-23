@@ -49,6 +49,27 @@ async def test_event_crud_keeps_stable_id_and_cleans_route(hass: HomeAssistant):
 
 
 @pytest.mark.asyncio
+async def test_event_edit_prefills_saved_values_before_update(hass: HomeAssistant):
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={
+        "events": {"saved_event": {"name": "Gespeicherter Name", "message": "Gespeicherter Text", "enabled": False, "priority": "high", "description": "Beschreibung", "dedup_seconds": 45}}
+    })
+    entry.add_to_hass(hass)
+    flow = SmartNotificationsOptionsFlow()
+    flow.hass = hass
+    flow.handler = entry.entry_id
+
+    select = await flow.async_step_events_edit_form()
+    assert select["type"] == "form"
+    prefilled = await flow.async_step_events_edit_form({"reason": "saved_event"})
+    assert prefilled["type"] == "form"
+    defaults = {str(key.schema if hasattr(key, "schema") else key): key.default() if callable(key.default) else key.default for key in prefilled["data_schema"].schema if hasattr(key, "default")}
+    assert "Gespeicherter Name" in defaults.values()
+    assert "Gespeicherter Text" in defaults.values()
+    assert False in defaults.values()
+    assert "high" in defaults.values()
+
+
+@pytest.mark.asyncio
 async def test_options_flow_back_returns_to_main_without_closing(hass: HomeAssistant):
     entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
     entry.add_to_hass(hass)

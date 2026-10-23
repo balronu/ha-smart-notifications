@@ -281,19 +281,22 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             menu_options=["events_add_form", "events_edit_form", "events_remove_form", "back"],
         )
 
-    def _event_schema(self, data, *, edit=False):
+    def _event_schema(self, data, *, edit=False, selected_reason=None):
+        event = data[CONF_EVENTS].get(selected_reason, {}) if selected_reason else {}
         schema = {
-            vol.Required("name"): str,
-            vol.Required("message"): str,
-            vol.Required("enabled", default=True): bool,
-            vol.Required("priority", default="normal"): selector.SelectSelector(
+            vol.Required("name", default=event.get("name", "")): str,
+            vol.Required("message", default=event.get("message", "")): str,
+            vol.Required("enabled", default=event.get("enabled", True)): bool,
+            vol.Required("priority", default=event.get("priority", "normal")): selector.SelectSelector(
                 selector.SelectSelectorConfig(options=["low", "normal", "high", "critical"], translation_key="priority")
             ),
-            vol.Optional("description", default=""): str,
-            vol.Optional("dedup_seconds", default=0): vol.Coerce(int),
+            vol.Optional("description", default=event.get("description", "")): str,
+            vol.Optional("dedup_seconds", default=event.get("dedup_seconds", 0)): vol.Coerce(int),
         }
         if edit:
-            schema = {vol.Required("reason"): selector.SelectSelector(selector.SelectSelectorConfig(options=self._event_options(data))), **schema}
+            if selected_reason is None:
+                return vol.Schema({vol.Required("reason"): selector.SelectSelector(selector.SelectSelectorConfig(options=self._event_options(data)))})
+            schema = {vol.Required("reason", default=selected_reason): selector.SelectSelector(selector.SelectSelectorConfig(options=self._event_options(data))), **schema}
         else:
             schema = {vol.Required("reason"): str, **schema}
         return vol.Schema(schema)
@@ -319,6 +322,8 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             event = data[CONF_EVENTS].get(key)
             if not event:
                 return self.async_abort(reason="event_not_found")
+            if "name" not in user_input or "message" not in user_input:
+                return self.async_show_form(step_id="events_edit_form", data_schema=self._event_schema(data, edit=True, selected_reason=key))
             event.update({field: user_input.get(field, "") for field in ("name", "message", "description")})
             event.update({"enabled": user_input["enabled"], "priority": user_input["priority"], "dedup_seconds": user_input.get("dedup_seconds", 0)})
             await self._save_options()
@@ -367,7 +372,10 @@ class SmartNotificationsOptionsFlow(config_entries.OptionsFlow):
             return await self.async_step_discover_notifications()
         if not candidates:
             return self.async_abort(reason="no_candidates")
-        return self.async_show_form(step_id="discover_candidates_form", data_schema=vol.Schema({vol.Required("candidate_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": key, "label": f"{item.get('source_name', item['source_id'])} – {item['service']}"} for key, item in candidates.items()])), vol.Required("action", default="review"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": "review", "label": "Prüfen"}, {"value": "adopt", "label": "Übernehmen"}, {"value": "ignore", "label": "Ignorieren"}]))}))
+        grouped_options = {}
+        for key, item in candidates.items():
+            grouped_options.setdefault(item.get("group_id", key), {"value": key, "label": f"{item.get('source_name', item['source_id'])} – {item.get('message') or item['service']}"})
+        return self.async_show_form(step_id="discover_candidates_form", data_schema=vol.Schema({vol.Required("candidate_id"): selector.SelectSelector(selector.SelectSelectorConfig(options=list(grouped_options.values()))), vol.Required("action", default="review"): selector.SelectSelector(selector.SelectSelectorConfig(options=[{"value": "review", "label": "Prüfen"}, {"value": "adopt", "label": "Übernehmen"}, {"value": "ignore", "label": "Ignorieren"}]))}))
 
     async def async_step_event_devices(self, user_input=None):
         return self.async_show_menu(
