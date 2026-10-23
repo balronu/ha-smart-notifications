@@ -2,18 +2,26 @@
 <script>window.customCards=[];</script>
 <script src="../custom_components/smart_notifications/frontend/smart-notifications-card.js"></script>
 <body><script>
-  const status={configured:true,devices:[{id:"phone",name:"Phone",available:true}],events:[]};
+  const status={configured:true,devices:[{id:"phone",name:"Phone",available:true}],events:[{id:"fridge_open",name:"Fridge open",message_type:"static",message:"Close the fridge",priority:"normal",enabled:true,parameters:{},devices:["phone"]}]};
   const discovery={candidates:[],devices:[],source_scope:"fixture"};
-  const hass={locale:{language:"en"},callApi:async()=>({ ...status, devices:status.devices, events:status.events, ...discovery })};
+  const hass={locale:{language:"en"},callApi:async(method)=>method==="POST"?{ok:true,message:"Preview"}:{ ...status, devices:status.devices, events:status.events, ...discovery }};
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   async function run(){
     const card=document.createElement("smart-notifications-card"); card.setConfig({title:"Fixture"}); document.body.append(card); card.hass=hass; await wait(30);
-    card.shadowRoot.querySelector("#new-event").click(); await wait(0);
+    const edit=card.shadowRoot.querySelector("[data-edit-event]");
+    edit.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true,composed:true})); card.hass={...hass}; await wait(5);
+    edit.dispatchEvent(new PointerEvent("pointerup",{bubbles:true,composed:true})); edit.click(); await wait(10);
+    if (!card.shadowRoot.querySelector(".event-editor")) throw Error("edit click lost");
     const select=card.shadowRoot.querySelector("[name=event-type]"); select.value="template";
     select.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true,composed:true}));
     select.dispatchEvent(new FocusEvent("focusin",{bubbles:true,composed:true}));
     card.hass={...hass}; await wait(30);
-    document.title=card.shadowRoot.querySelector("[name=event-type]")===select && select.value==="template" ? "PASS" : "FAIL";
+    const stable=card.shadowRoot.querySelector("[name=event-type]")===select && select.value==="template";
+    card.shadowRoot.querySelector("#cancel-event").click(); await wait(5);
+    card.shadowRoot.querySelector("[data-edit-event]").click(); await wait(5);
+    const reopened=Boolean(card.shadowRoot.querySelector(".event-editor"));
+    card.shadowRoot.querySelector("#save-event").click(); await wait(10);
+    document.title=stable && reopened && Boolean(card.shadowRoot.querySelector("[data-edit-event]")) ? "PASS" : "FAIL";
   }
   run().catch(error=>{document.title="FAIL:"+error;});
 </script></body>

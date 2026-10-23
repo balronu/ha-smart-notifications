@@ -1,5 +1,19 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.12 – 2026-10-23
+
+### Deutsch
+- Behoben: „Bearbeiten“ reagiert auf mobilen Touch-/Pointer-Sequenzen wieder zuverlässig.
+- Ein ausstehender Hintergrund-Rebuild kann den synthetischen mobilen `click` nicht mehr vorzeitig verlieren.
+- Bearbeiten, Nachrichtentyp, HA-State-Update, Abbrechen, erneutes Öffnen und Speichern als Regression abgedeckt.
+- Keine neuen Funktionen und keine Änderungen an Discovery, Geräteverwaltung oder Nachrichtenverarbeitung.
+
+### English
+- Fixed the mobile “Edit” action so touch/pointer sequences open the event editor reliably again.
+- A pending background rebuild can no longer remove the target before the synthesized mobile `click` runs.
+- Regression coverage now includes edit, message type, HA state update, cancel, reopen and save.
+- No new features and no changes to discovery, device management or message processing.
+
 ## 0.1.0-beta.11 – 2026-10-23
 
 ### Deutsch
