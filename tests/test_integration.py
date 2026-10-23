@@ -298,6 +298,10 @@ async def test_actual_options_event_crud_preserves_stable_id_and_routes(
         options["flow_id"], {"next_step_id": "events_edit_form"}
     )
     assert edit["type"] == "form"
+    prefilled = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"reason": "beta7_event"}
+    )
+    assert prefilled["type"] == "form"
     edited = await hass.config_entries.options.async_configure(
         options["flow_id"],
         {

@@ -48,6 +48,17 @@ def test_discovery_marks_templates_and_technical_fallback_name():
     assert candidates[0]["templates"]
 
 
+def test_automation_trigger_and_conditions_are_carried_into_group_identity():
+    documents = {"automation": {
+        "one": {"alias": "Meldung", "trigger": [{"platform": "state", "entity_id": "sensor.a"}], "condition": [{"condition": "state", "entity_id": "input_boolean.x", "state": "on"}], "action": [{"service": "notify.send_message", "data": {"message": "Gleich"}}]},
+        "two": {"alias": "Meldung", "trigger": [{"platform": "state", "entity_id": "sensor.b"}], "condition": [{"condition": "state", "entity_id": "input_boolean.x", "state": "on"}], "action": [{"service": "notify.send_message", "data": {"message": "Gleich"}}]},
+    }}
+    candidates = scan_documents(documents)
+    assert candidates[0]["trigger"] != candidates[1]["trigger"]
+    assert candidates[0]["conditions"] == candidates[1]["conditions"]
+    assert candidates[0]["group_id"] != candidates[1]["group_id"]
+
+
 @pytest.mark.asyncio
 async def test_async_scan_marks_removed_candidates_as_not_found(hass, tmp_path):
     (tmp_path / "automations.yaml").write_text(

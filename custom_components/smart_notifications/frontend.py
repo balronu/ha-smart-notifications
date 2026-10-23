@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from aiohttp import web
+from homeassistant.components import frontend as ha_frontend
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.server import StaticPathConfig
 from homeassistant.core import HomeAssistant
@@ -13,6 +14,8 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN, SERVICE_TEST_DEVICE, SERVICE_TEST_EVENT
 from .discovery import apply_candidate_action, async_scan
 from .storage import merged_config
+
+CARD_RESOURCE_URL = "/smart_notifications/smart-notifications-card.js?v=0.1.0-beta.9"
 
 
 class SmartNotificationsStatusView(HomeAssistantView):
@@ -109,6 +112,10 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
     await hass.http.async_register_static_paths(
         [StaticPathConfig("/smart_notifications/smart-notifications-card.js", str(card_path), cache_headers=False)]
     )
+    # Public HA API: load the module before Lovelace builds the card picker.
+    # The query string is a cache-buster for HACS upgrades; the static path
+    # remains the same and therefore needs no second resource registration.
+    ha_frontend.add_extra_js_url(hass, CARD_RESOURCE_URL)
     hass.http.register_view(SmartNotificationsStatusView)
     hass.http.register_view(SmartNotificationsTestView)
     hass.http.register_view(SmartNotificationsDiscoveryView)

@@ -103,7 +103,13 @@ def scan_documents(documents: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         for source_id, document in sources.items():
             actions = document.get("action", document) if isinstance(document, dict) else document
-            for action in _walk_actions(actions):
+            source_context = {}
+            if isinstance(document, dict):
+                if "trigger" in document:
+                    source_context["trigger"] = _summarize(document["trigger"])
+                if "condition" in document or "conditions" in document:
+                    source_context["conditions"] = _summarize(document.get("condition", document.get("conditions")))
+            for action in _walk_actions(actions, context=source_context):
                 item = _candidate(source_type, str(source_id), document if isinstance(document, dict) else {}, action)
                 if item:
                     result.append(item)
@@ -136,10 +142,14 @@ def apply_candidate_action(
     candidate = candidates.get(candidate_id)
     if not candidate:
         return None
+    group_id = candidate.get("group_id")
+    grouped = [candidate] if not group_id else [item for item in candidates.values() if item.get("group_id") == group_id]
     if action == "ignore":
-        candidate["status"] = "ignored"
+        for item in grouped:
+            item["status"] = "ignored"
     elif action == "review":
-        candidate["status"] = "review"
+        for item in grouped:
+            item["status"] = "review"
     elif action == "adopt":
         edits = edits or {}
         reason = str(edits.get("reason") or candidate.get("suggested_reason") or "notification").strip().lower()
@@ -154,8 +164,9 @@ def apply_candidate_action(
         })
         if edits.get("devices") is not None:
             config["routes"][reason] = list(edits["devices"])
-        candidate["status"] = "adopted"
-        candidate["adopted_reason"] = reason
+        for item in grouped:
+            item["status"] = "adopted"
+            item["adopted_reason"] = reason
     else:
         raise ValueError(f"unsupported discovery action: {action}")
     return candidate
