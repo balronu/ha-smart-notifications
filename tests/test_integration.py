@@ -6,6 +6,7 @@ from homeassistant import loader
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from smart_notifications import async_setup, async_setup_entry, async_unload_entry
@@ -182,6 +183,78 @@ async def test_actual_config_and_options_flows_accept_piper_and_show_menu(
 
 
 @pytest.mark.asyncio
+async def test_actual_options_device_menu_steps_are_supported(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    hass.states.async_set("tts.piper", "idle", {"friendly_name": "Piper"})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"tts_entity": "tts.piper", "title": "Test", "dedup_seconds": 30}
+    )
+    entry_id = result["result"].entry_id
+    registry = er.async_get(hass)
+    entity = registry.async_get_or_create(
+        "media_player",
+        "test",
+        "hub",
+        config_entry=hass.config_entries.async_get_entry(entry_id),
+        original_name="Esszimmer Hub",
+    )
+    profile_id = entity.entity_id.replace(".", "_")
+    hass.states.async_set(entity.entity_id, "idle", {"friendly_name": "Esszimmer Hub"})
+    options = await hass.config_entries.options.async_init(entry_id)
+    devices = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "devices"}
+    )
+    assert devices["type"] == "menu"
+    assert set(devices["menu_options"]) == {
+        "devices_add_form", "devices_edit_form", "devices_remove_form", "back"
+    }
+    add = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "devices_add_form"}
+    )
+    assert add["type"] == "form"
+    added = await hass.config_entries.options.async_configure(
+        options["flow_id"],
+        {"entity_id": entity.entity_id, "alias": "Esszimmer", "physical_group": "Hub"},
+    )
+    assert added["type"] == "menu"
+    edited = await hass.config_entries.options.async_configure(
+        options["flow_id"],
+        {"next_step_id": "devices_edit_form"},
+    )
+    assert edited["type"] == "form"
+    edited = await hass.config_entries.options.async_configure(
+        options["flow_id"],
+        {
+            "device_id": profile_id,
+            "entity_id": entity.entity_id,
+            "alias": "Esszimmer bearbeitet",
+            "physical_group": "Hub",
+            "enabled": False,
+        },
+    )
+    assert edited["type"] == "menu"
+    removed = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "devices_remove_form"}
+    )
+    assert removed["type"] == "form"
+    cancelled = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"device_id": profile_id, "confirm": False}
+    )
+    assert cancelled["type"] == "menu"
+    assert profile_id in hass.config_entries.async_get_entry(entry_id).options["devices"]
+    await hass.config_entries.options.async_configure(
+        options["flow_id"], {"next_step_id": "devices_remove_form"}
+    )
+    finished = await hass.config_entries.options.async_configure(
+        options["flow_id"], {"device_id": profile_id, "confirm": True}
+    )
+    assert finished["type"] == "menu"
+    assert profile_id not in hass.config_entries.async_get_entry(entry_id).options["devices"]
+
+
+@pytest.mark.asyncio
 async def test_real_german_options_translations_include_main_and_back_labels(hass: HomeAssistant):
     translations = await async_get_translations(
         hass, "de", "options", integrations={DOMAIN}
@@ -192,8 +265,8 @@ async def test_real_german_options_translations_include_main_and_back_labels(has
         translations[f"{prefix}devices.menu_options.back"]
         == "Zurück zum Hauptmenü"
     )
-    assert translations[f"{prefix}devices.menu_options.devices_edit"] == "Ausgabegerät bearbeiten"
-    assert translations[f"{prefix}devices.menu_options.devices_remove"] == "Ausgabegerät entfernen"
+    assert translations[f"{prefix}devices.menu_options.devices_edit_form"] == "Ausgabegerät bearbeiten"
+    assert translations[f"{prefix}devices.menu_options.devices_remove_form"] == "Ausgabegerät entfernen"
     assert translations[f"{prefix}devices_edit_form.data.enabled"] == "Aktiviert"
     assert translations[f"{prefix}test_device_form.data.device_id"] == "Ausgabegerät"
     assert "device_count" not in " ".join(translations.values())
