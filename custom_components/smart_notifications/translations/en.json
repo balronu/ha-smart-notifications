@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Smart Notifications",
-        "description": "Configure centralized outputs. Found: {media_player_count} TTS output devices, {notify_count} push services and {tts_count} TTS engines.",
+        "description": "Configure centralized outputs.",
         "data": {"tts_entity": "TTS engine", "title": "Default title", "dedup_seconds": "Duplicate protection (seconds)"},
         "data_description": {"tts_entity": "The TTS engine used to create audio for selected media players.", "title": "Title used for text notifications.", "dedup_seconds": "Time window in which identical outputs are suppressed."}
       }

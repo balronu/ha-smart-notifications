@@ -68,15 +68,13 @@ def discovered_devices(hass: HomeAssistant) -> list[dict[str, Any]]:
 
 def discovered_tts_entities(hass: HomeAssistant) -> list[dict[str, str]]:
     """Return TTS engines separately from output devices."""
-    registry = er.async_get(hass)
     return sorted(
         [
             {
-                "entity_id": entity.entity_id,
-                "name": entity.name or entity.original_name or entity.entity_id,
+                "entity_id": state.entity_id,
+                "name": state.attributes.get("friendly_name", state.entity_id),
             }
-            for entity in registry.entities.values()
-            if entity.domain == "tts"
+            for state in hass.states.async_all("tts")
         ],
         key=lambda item: item["entity_id"],
     )

@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock
 
 import pytest
+import smart_notifications
+from homeassistant import loader
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -73,3 +75,36 @@ async def test_config_entry_setup_and_unload(hass: HomeAssistant):
     assert entry.entry_id in hass.data[DOMAIN]["entries"]
     assert await async_unload_entry(hass, entry)
     assert entry.entry_id not in hass.data[DOMAIN]["entries"]
+
+
+@pytest.mark.asyncio
+async def test_actual_config_entry_loader_does_not_treat_service_schema_as_yaml_config(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    assert not hasattr(smart_notifications, "CONFIG_SCHEMA")
+    hass.data[loader.DATA_CUSTOM_COMPONENTS] = loader._get_custom_components(hass)
+    hass.data[loader.DATA_CUSTOM_COMPONENTS] = loader._get_custom_components(hass)
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    assert entry.state.value == "loaded"
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+@pytest.mark.asyncio
+async def test_actual_config_and_options_flows_accept_piper_and_show_menu(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    hass.states.async_set("tts.piper", "2026-10-23T00:00:00+00:00", {"friendly_name": "Piper"})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    assert result["type"] == "form"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"tts_entity": "tts.piper", "title": "Test", "dedup_seconds": 30}
+    )
+    assert result["type"] == "create_entry"
+    entry_id = result["result"].entry_id
+    options = await hass.config_entries.options.async_init(entry_id)
+    assert options["type"] == "menu"
+    assert set(options["menu_options"]) == {
+        "settings", "devices", "events", "event_devices", "device_events", "test_device", "test_event"
+    }

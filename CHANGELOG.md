@@ -1,5 +1,19 @@
 # Änderungsprotokoll / Changelog
 
+## 0.1.0-beta.3 – 2026-10-23
+
+### Deutsch
+- Den nachgewiesenen Setup-Fehler durch die reservierte Variable `CONFIG_SCHEMA` behoben.
+- Die Beschreibung des Config Flows ist jetzt statisch und kann keinen `device_count`-Formatierungsfehler mehr auslösen.
+- TTS-Engines werden aus den tatsächlichen `tts`-States erkannt; Piper bleibt auswählbar.
+- Echte HA-Config-Entry-, Config-Flow- und Options-Flow-Regressionstests ergänzt.
+
+### English
+- Fixed the proven setup failure caused by the reserved `CONFIG_SCHEMA` module variable.
+- The Config Flow description is now static and cannot trigger a `device_count` formatting error.
+- TTS engines are discovered from actual `tts` states; Piper remains selectable.
+- Added real HA Config Entry, Config Flow and Options Flow regression tests.
+
 ## 0.1.0-beta.2 – 2026-10-23
 
 ### Deutsch

@@ -2,7 +2,7 @@
 
 Zentrale Verwaltung von Sprachausgaben, Push-Benachrichtigungen und intelligenten Geräteaktionen für Home Assistant.
 
-> **Beta:** `v0.1.0-beta.2` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
+> **Beta:** `v0.1.0-beta.3` ist eine frühe, installierbare Version. Bitte vor dem produktiven Einsatz sichern und testen.
 
 ## Funktionen
 
@@ -59,7 +59,7 @@ Bitte ein Issue mit Home-Assistant-Version, Integration-Version, anonymisiertem 
 
 ## English
 
-Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.2` release provides corrected native setup/options flows, translated fields and menu labels, Beta.1 option migration, a shared event catalog, `smart_notifications.send`, TTS via `tts.speak`, notify targets, deliberate device/event tests and a responsive Lovelace card with a visual editor. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
+Smart Notifications centralizes voice announcements, push notifications and intelligent device actions for Home Assistant. The `v0.1.0-beta.3` release fixes the HA YAML-schema collision, removes runtime translation placeholders, discovers live TTS states such as Piper, and adds real HA lifecycle and flow regression coverage. Add `/smart_notifications/smart-notifications-card.js` once as a JavaScript module through the dashboard Resources UI, then add the card through its editor. Configure the integration through **Settings → Devices & services** and explicitly enable pre-releases in HACS.
 
 The beta requires Home Assistant 2026.10 or newer (Python 3.14.2+ for this HA line). Camera snapshots/live video, tones, critical iOS alerts, Music Assistant announcements, quiet hours and persistent queues are not implemented yet and are not advertised as supported. Test actions require an explicit click and confirmation. Report issues at the URL above.
 

@@ -35,7 +35,7 @@ from .frontend import async_setup_frontend
 from .storage import merged_config, route_map
 
 _LOGGER = logging.getLogger(__name__)
-CONFIG_SCHEMA = vol.Schema(
+SEND_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_REASON): cv.string,
         vol.Optional(ATTR_CONTEXT, default={}): dict,
@@ -119,7 +119,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         await async_send(ServiceCall(DOMAIN, SERVICE_SEND, {ATTR_REASON: call.data[ATTR_REASON], ATTR_CONTEXT: {}}))
 
     if not hass.services.has_service(DOMAIN, SERVICE_SEND):
-        hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=CONFIG_SCHEMA)
+        hass.services.async_register(DOMAIN, SERVICE_SEND, async_send, schema=SEND_SCHEMA)
     if not hass.services.has_service(DOMAIN, SERVICE_TEST_DEVICE):
         hass.services.async_register(DOMAIN, SERVICE_TEST_DEVICE, async_test_device, schema=TEST_DEVICE_SCHEMA)
     if not hass.services.has_service(DOMAIN, SERVICE_TEST_EVENT):
